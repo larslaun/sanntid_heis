@@ -1,5 +1,12 @@
 package main
 
+
+type DirnBehaviourPair struct {
+	Dirn      Dirn
+	Behaviour ElevatorBehaviour
+}
+
+
 func requestsAbove(e Elevator) int {
 	for f := e.floor + 1; f < N_FLOORS; f++ {
 		for btn := 0; btn < N_BUTTONS; btn++ {
@@ -28,7 +35,49 @@ func requestsHere(e Elevator) int {
 			return 1
 		}
 	}
-	return 1
+	return 0
+}
+
+
+
+func requestsChooseDirection(e Elevator) DirnBehaviourPair {
+	switch e.Dirn {
+	case D_Up:
+		if requestsAbove(e) {
+			return DirnBehaviourPair{D_Up, EB_Moving}
+		} else if requestsHere(e) {
+			return DirnBehaviourPair{D_Stop, EB_DoorOpen}
+		} else if requestsBelow(e) {
+			return DirnBehaviourPair{D_Down, EB_Moving}
+		} else {
+			return DirnBehaviourPair{D_Stop, EB_Idle}
+		}
+	case D_Down:
+		if requestsBelow(e) {
+			return DirnBehaviourPair{D_Down, EB_Moving}
+		} else if requestsHere(e) {
+			return DirnBehaviourPair{D_Stop, EB_DoorOpen}
+		} else if requestsAbove(e) {
+			return DirnBehaviourPair{D_Up, EB_Moving}
+		} else {
+			return DirnBehaviourPair{D_Stop, EB_Idle}
+		}
+	case D_Stop:
+		if requestsHere(e) {
+			return DirnBehaviourPair{D_Stop, EB_DoorOpen}
+		} else if requestsAbove(e) {
+			return DirnBehaviourPair{D_Up, EB_Moving}
+		} else if requestsBelow(e) {
+			return DirnBehaviourPair{D_Down, EB_Moving}
+		} else {
+			return DirnBehaviourPair{D_Stop, EB_Idle}
+		}
+	default:
+		return DirnBehaviourPair{
+			Dirn:      D_Stop,
+			Behaviour: EB_Idle,
+		}
+	}
 }
 
 
