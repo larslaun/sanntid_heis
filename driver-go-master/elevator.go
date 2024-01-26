@@ -32,3 +32,4 @@ func eb_toString(eb ElevtorBehaviour) sting{
 		fmt.Print("EB_Idle")
 	}
 }
+
