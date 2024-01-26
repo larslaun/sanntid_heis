@@ -2,7 +2,7 @@ package main
 
 
 type DirnBehaviourPair struct {
-	Dirn      Dirn
+	dirn      Dirn
 	Behaviour ElevatorBehaviour
 }
 
@@ -48,10 +48,8 @@ func requestsHere(e Elevator) int {
 
 //->"Continue in the current direction of travel if there are any further requests in that direction"
 
-
-
 func requestsChooseDirection(e Elevator) DirnBehaviourPair {
-	switch e.Dirn {
+	switch e.dirn {
 	case D_Up:
 		if requestsAbove(e) {
 			return DirnBehaviourPair{D_Up, EB_Moving}
@@ -83,10 +81,7 @@ func requestsChooseDirection(e Elevator) DirnBehaviourPair {
 			return DirnBehaviourPair{D_Stop, EB_Idle}
 		}
 	default:
-		return DirnBehaviourPair{
-			Dirn:      D_Stop,
-			Behaviour: EB_Idle,
-		}
+		return DirnBehaviourPair{D_Stop, EB_Idle}
 	}
 }
 
@@ -94,11 +89,11 @@ func requestsChooseDirection(e Elevator) DirnBehaviourPair {
 //checks if the elevator should stop at it's current floor or not. It will only stop if the cab has ordered it to or there is a 
 //a request in the direction it is already moving. 
 func requests_shouldStop(e Elevator) int {
-	switch e.Dirn {
+	switch e.dirn {
 	case D_Down:
-		return int(e.Requests[e.floor][B_HallDown] || e.Requests[e.Floor][B_Cab] || !requestsBelow(e))
+		return int(e.Requests[e.floor][B_HallDown] || e.Requests[e.floor][B_Cab] || !requestsBelow(e))
 	case D_Up:
-		return int(e.Requests[e.floor][B_HallUp] || e.Requests[e.Floor][B_Cab] || !requestsAbove(e))
+		return int(e.Requests[e.floor][B_HallUp] || e.Requests[e.floor][B_Cab] || !requestsAbove(e))
 	case D_Stop:
 		fallthrough
 	default:
