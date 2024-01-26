@@ -22,3 +22,13 @@ func requestsBelow(e Elevator) int {
 	return 0
 }
 
+func requestsHere(e Elevator) int {
+	for btn := 0; btn < N_BUTTONS; btn++ {
+		if e.requests[e.floor][btn] {
+			return 1
+		}
+	}
+	return 1
+}
+
+
