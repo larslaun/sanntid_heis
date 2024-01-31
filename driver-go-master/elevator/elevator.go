@@ -1,6 +1,6 @@
 package elevator
 
-import "Driver-go/elevio/elevator_io.go"
+import "./elevio"
 import "fmt"
 
 type ElevatorBehaviour int
@@ -19,43 +19,50 @@ type elevator struct{
 	behaviour int
 	
 	//Config
-	doorOpenDuration double
+	doorOpenDuration float64
 	
 }
 
+func elevio_dirn_toString(md MotorDirection){
+	if md == MD_Up{
+		fmt.Print("MD_Up")
+	} else if md==MD_Down {
+		fmt.Print("MD_Down")
+	}else if md==MD_Stop {
+		fmt.Print("MD_Stop")
+	}
+}
 
-
-func eb_toString(eb ElevtorBehaviour) sting{
+func eb_toString(eb ElevatorBehaviour) string{
 	if eb == EB_Idle{
-		fmt.Print("EB_Idle")
+		return "EB_Idle"  // return or print directly
 	} else if eb==EB_DoorOpen {
-		fmt.Print("EB_DoorOpen")
+		return "EB_DoorOpen"
 	}else if eb==EB_Moving {
-		fmt.Print("EB_Moving")
+		return "EB_Moving"
 	}
 }
 
 
-func elevator_print(es Elevator){
+func elevator_print(es elevator){
 	fmt.Print("  +--------------------+\n")
-	fmt.Print(
-        "  |floor = %-2d          |\n"
-        "  |dirn  = %-12.12s|\n"
-        "  |behav = %-12.12s|\n",
-        es.floor,
-        elevio_dirn_toString(es.dirn),
-        eb_toString(es.behaviour))
-	fmt.Print("  +--------------------+\n");
-	fmt.Print("  |  | up  | dn  | cab |\n");
-	for(int f = N_FLOORS-1; f >= 0; f--){
+	fmt.Printf("  |floor = %-2d|\n", es.floor)
+    fmt.Printf("  |dirn  = %-12.12s|\n", elevio_dirn_toString(es.dirn))
+    fmt.Print("  |behav = %-12.12s|\n", eb_toString(es.behaviour)) 
+	fmt.Print("  +--------------------+\n")
+	fmt.Print("  |  | up  | dn  | cab |\n")
+	for f := N_FLOORS-1; f >= 0; f--{
 		fmt.Print("  | %d", f);
 		for btn := 0; btn < N_BUTTONS; btn++{
-			if (f == N_FLOORS-1 && btn == B_HallUp)  || 
-				(f == 0 && btn == B_HallDown) 
-			{
+			if (f == N_FLOORS-1 && btn == B_HallUp)  || (f == 0 && btn == B_HallDown){
 				fmt.Print("|     ");
 			} else {
-				fmt.Print(es.requests[f][btn] ? "|  #  " : "|  -  ");
+				if es.requests[f][btn] == 1{
+					fmt.Print("|  #  ")
+				} else {
+					fmt.Print("|  -  ")
+				}
+				//fmt.Print(es.requests[f][btn] ? "|  #  " : "|  -  "); replaced by if sentence over ^
 			}
 		}
 		fmt.Print("|\n");
