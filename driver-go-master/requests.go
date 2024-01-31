@@ -3,7 +3,7 @@ package main
 
 type DirnBehaviourPair struct {
 	dirn      Dirn
-	Behaviour ElevatorBehaviour
+	behaviour ElevatorBehaviour
 }
 
 
@@ -102,3 +102,41 @@ func requests_shouldStop(e Elevator) int {
 }
 
 
+//function where you can spesify a specific request type and it returns wether the request should be cleared or not. 
+func requestsShouldClearImmediately(e Elevator, btnFloor int, btnType Button) int {
+	return  e.floor == btnFloor && 
+			(
+			(e.dirn == D_Up && btnType == B_HallUp) || 
+			(e.dirn == D_Down && btnType == B_HallDown) || 
+			e.dirn == D_Stop || 
+			btnType == B_Cab
+			)	
+}
+
+
+
+//function clears request from the cab at the current floor. 
+//if the elevator is going up and there are no more requests above or requests UP at the current floor, it will clear the DOWN-request. 
+//It also clears requests for UP as default, there are either no requests there, or it continues to go UP. 
+//If the elevetor state is Stop, it clears both UP and DOWN hall calls, probably only one of them at that floor, since the elevator door will open for one of (the first) the requests. 
+func requestsClearAtCurrentFloor(e Elevator) Elevator {
+	e.requests[e.floor][B_Cab] = 0
+
+	switch e.dirn {
+	case D_Up:
+		if !requestsAbove(e) && !e.requests[e.floor][B_HallUp] {
+			e.requests[e.floor][B_HallDown] = 0
+		}
+		e.requests[e.floor][B_HallUp] = 0
+	case D_Down:
+		if !requestsBelow(e) && !e.requests[e.floor][B_HallDown] {
+			e.requests[e.floor][B_HallUp] = 0
+		}
+		e.requests[e.floor][B_HallDown] = 0
+	case D_Stop, default:
+		e.requests[e.floor][B_HallUp] = 0
+		e.requests[e.floor][B_HallDown] = 0
+	}
+
+	return e
+}
