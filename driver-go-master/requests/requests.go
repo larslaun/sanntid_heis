@@ -91,7 +91,7 @@ func requests_shouldStop(e Elevator) int {
 	case D_Up:
 		return int(e.Requests[e.floor][B_HallUp] || e.Requests[e.floor][B_Cab] || !requestsAbove(e))
 	case D_Stop:
-		fallthrough
+		fallthroughMD_Stop,
 	default:
 		return 1
 	}

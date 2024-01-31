@@ -1,6 +1,6 @@
 package elevator
 
-import "./elevio"
+import "Driver-go/elevio"
 import "fmt"
 
 type ElevatorBehaviour int
@@ -14,7 +14,7 @@ const (
 
 type elevator struct{
 	floor int
-	dirn MotorDirection
+	dirn elevio.MotorDirection
 	requests[N_FLOORS][N_BUTTONS] int
 	behaviour int
 	
@@ -23,8 +23,8 @@ type elevator struct{
 	
 }
 
-func elevio_dirn_toString(md MotorDirection){
-	if md == MD_Up{
+func elevio_dirn_toString(md elevio.MotorDirection){
+	if md == elevio.MD_Up{
 		fmt.Print("MD_Up")
 	} else if md==MD_Down {
 		fmt.Print("MD_Down")
