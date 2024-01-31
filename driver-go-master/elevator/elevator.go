@@ -12,7 +12,7 @@ const (
 )
 
 
-type elevator struct{
+type Elevator struct{
 	floor int
 	dirn MotorDirection
 	requests[N_FLOORS][N_BUTTONS] int
