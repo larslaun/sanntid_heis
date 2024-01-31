@@ -7,7 +7,7 @@ type DirnBehaviourPair struct {
 
 // checks if there are any requests for the elevator above it's current floor
 // by incrementing through each element in the "boolean" requests matrix.
-func requestsAbove(e elevator) int {
+func requestsAbove(e Elevator) int {
 	for f := e.floor + 1; f < N_FLOORS; f++ {
 		for btn := 0; btn < N_BUTTONS; btn++ {
 			if e.requests[f][btn] {
@@ -49,36 +49,36 @@ func requestsChooseDirection(e Elevator) DirnBehaviourPair {
 	switch e.dirn {
 	case D_Up:
 		if requestsAbove(e) {
-			return DirnBehaviourPair{D_Up, EB_Moving}
+			return DirnBehaviourPair{MD_Up, EB_Moving}
 		} else if requestsHere(e) {
-			return DirnBehaviourPair{D_Up, EB_DoorOpen}
+			return DirnBehaviourPair{MD_Up, EB_DoorOpen}
 		} else if requestsBelow(e) {
-			return DirnBehaviourPair{D_Down, EB_Moving}
+			return DirnBehaviourPair{MD_Down, EB_Moving}
 		} else {
-			return DirnBehaviourPair{D_Stop, EB_Idle}
+			return DirnBehaviourPair{MD_Stop, EB_Idle}
 		}
 	case D_Down:
 		if requestsBelow(e) {
-			return DirnBehaviourPair{D_Down, EB_Moving}
+			return DirnBehaviourPair{MD_Down, EB_Moving}
 		} else if requestsHere(e) {
-			return DirnBehaviourPair{D_Down, EB_DoorOpen}
+			return DirnBehaviourPair{MD_Down, EB_DoorOpen}
 		} else if requestsAbove(e) {
-			return DirnBehaviourPair{D_Up, EB_Moving}
+			return DirnBehaviourPair{MD_Up, EB_Moving}
 		} else {
-			return DirnBehaviourPair{D_Stop, EB_Idle}
+			return DirnBehaviourPair{MD_Stop, EB_Idle}
 		}
 	case D_Stop:
 		if requestsHere(e) {
-			return DirnBehaviourPair{D_Stop, EB_DoorOpen}
+			return DirnBehaviourPair{MD_Stop, EB_DoorOpen}
 		} else if requestsAbove(e) {
-			return DirnBehaviourPair{D_Up, EB_Moving}
+			return DirnBehaviourPair{MD_Up, EB_Moving}
 		} else if requestsBelow(e) {
-			return DirnBehaviourPair{D_Down, EB_Moving}
+			return DirnBehaviourPair{MD_Down, EB_Moving
 		} else {
-			return DirnBehaviourPair{D_Stop, EB_Idle}
+			return DirnBehaviourPair{MD_Stop, EB_Idle}
 		}
 	default:
-		return DirnBehaviourPair{D_Stop, EB_Idle}
+		return DirnBehaviourPair{MD_Stop, EB_Idle}
 	}
 }
 
@@ -86,12 +86,21 @@ func requestsChooseDirection(e Elevator) DirnBehaviourPair {
 // a request in the direction it is already moving.
 func requests_shouldStop(e Elevator) int {
 	switch e.dirn {
+<<<<<<< HEAD
 	case D_Down:
 		return int(e.Requests[e.floor][B_HallDown] || e.Requests[e.floor][B_Cab] || !requestsBelow(e))
 	case D_Up:
 		return int(e.Requests[e.floor][B_HallUp] || e.Requests[e.floor][B_Cab] || !requestsAbove(e))
 	case D_Stop:
 		fallthroughMD_Stop,
+=======
+	case MD_Down:
+		return int(e.Requests[e.floor][BT_HallDown] || e.Requests[e.floor][BT_Cab] || !requestsBelow(e))
+	case MD_Up:
+		return int(e.Requests[e.floor][BT_HallUp] || e.Requests[e.floor][BT_Cab] || !requestsAbove(e))
+	case MD_Stop:
+		fallthrough
+>>>>>>> 9b747f9723e3a99835d626bfd6df969843aaaadf
 	default:
 		return 1
 	}
@@ -115,18 +124,18 @@ func requestsClearAtCurrentFloor(e Elevator) Elevator {
 
 	switch e.dirn {
 	case MD_Up:
-		if !requestsAbove(e) && !e.requests[e.floor][B_HallUp] {
-			e.requests[e.floor][B_HallDown] = 0
+		if !requestsAbove(e) && !e.requests[e.floor][BT_HallUp] {
+			e.requests[e.floor][BT_HallDown] = 0
 		}
-		e.requests[e.floor][B_HallUp] = 0
+		e.requests[e.floor][BT_HallUp] = 0
 	case MD_Down:
-		if !requestsBelow(e) && !e.requests[e.floor][B_HallDown] {
-			e.requests[e.floor][B_HallUp] = 0
+		if !requestsBelow(e) && !e.requests[e.floor][BT_HallDown] {
+			e.requests[e.floor][BT_HallUp] = 0
 		}
-		e.requests[e.floor][B_HallDown] = 0
+		e.requests[e.floor][BT_HallDown] = 0
 	default:
-		e.requests[e.floor][B_HallUp] = 0
-		e.requests[e.floor][B_HallDown] = 0
+		e.requests[e.floor][BT_HallUp] = 0
+		e.requests[e.floor][BT_HallDown] = 0
 	}
 
 	return e
