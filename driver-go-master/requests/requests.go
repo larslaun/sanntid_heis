@@ -86,12 +86,21 @@ func requestsChooseDirection(e Elevator) DirnBehaviourPair {
 // a request in the direction it is already moving.
 func requests_shouldStop(e Elevator) int {
 	switch e.dirn {
+<<<<<<< HEAD
+	case D_Down:
+		return int(e.Requests[e.floor][B_HallDown] || e.Requests[e.floor][B_Cab] || !requestsBelow(e))
+	case D_Up:
+		return int(e.Requests[e.floor][B_HallUp] || e.Requests[e.floor][B_Cab] || !requestsAbove(e))
+	case D_Stop:
+		fallthroughMD_Stop,
+=======
 	case MD_Down:
 		return int(e.Requests[e.floor][BT_HallDown] || e.Requests[e.floor][BT_Cab] || !requestsBelow(e))
 	case MD_Up:
 		return int(e.Requests[e.floor][BT_HallUp] || e.Requests[e.floor][BT_Cab] || !requestsAbove(e))
 	case MD_Stop:
 		fallthrough
+>>>>>>> 9b747f9723e3a99835d626bfd6df969843aaaadf
 	default:
 		return 1
 	}

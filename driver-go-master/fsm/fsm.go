@@ -2,19 +2,23 @@ package fsm
 
 import (
 	"Driver-go/elevio"
-	"driver-go-master/elevator"
+	"Driver-go/elevator"
 	"Driver-go/requests"
 	"fmt"
 )
 
-func fsm_onInitBetweenFloors(){
+
+func fsm_onRequestButtonPress(buttons chan elevio.ButtonEvent, elevator chan elevator.Elevator){
+	select{
+		case 
+	}
+}
+
+
+
+func fsm_onInitBetweenFloors(e Elevator){
 	elevio.SetMotorDirection(elevio.MD_Down)
-	elevator.dirn = elevio.MD_Down
-	elevator.behaviour = elevator.EB_Moving
+	e.dirn = elevio.MD_Down
+	e.behaviour = elevator.EB_Moving
 }
 
-func fsm_onRequestButtonPress(btn_floor int, btn_type elevio.ButtonType){
-	//fmt.Printf("\n\n%T(%T, %T)", "__FUNCTION__", btn_floor, )
-
-
-}
