@@ -3,6 +3,7 @@ package fsm
 import (
 	"Driver-go/elevio"
 	"driver-go-master/elevator"
+	"Driver-go/requests"
 	"fmt"
 )
 
@@ -13,5 +14,7 @@ func fsm_onInitBetweenFloors(){
 }
 
 func fsm_onRequestButtonPress(btn_floor int, btn_type elevio.ButtonType){
-	fmt.Printf("\n\n%T(%T, %T)", "__FUNCTION__", btn_floor, )
+	//fmt.Printf("\n\n%T(%T, %T)", "__FUNCTION__", btn_floor, )
+
+
 }
