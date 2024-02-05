@@ -109,7 +109,7 @@ func fsm_onFloorArrival(newFloor int, elev elevator.Elevator){
 
 func setAllLights(elev elevator.Elevator){
 	for floor := 0; floor < elevator.N_FLOORS; floor++{
-		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab; btn++{  //Tror dette er fikset
+		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++{  //Tror dette er fikset
 			if elev.Requests[floor][btn]{
 				elevio.SetButtonLamp(btn, floor, true) 
 			}
