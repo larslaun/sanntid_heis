@@ -21,7 +21,7 @@ const (
 type Elevator struct{
 	Floor int
 	Dirn elevio.MotorDirection
-	Requests[N_FLOORS][N_BUTTONS] int
+	Requests[N_FLOORS][N_BUTTONS] bool //OBS!! endret denne fra int til bool. ok?
 	Behaviour ElevatorBehaviour
 	
 	//Config
@@ -65,7 +65,7 @@ func Elevator_print(es Elevator){
 			if (f == N_FLOORS-1 && btn == int(elevio.BT_HallUp))  || (f == 0 && btn == elevio.BT_HallDown){
 				fmt.Print("|     ");
 			} else {
-				if es.Requests[f][btn] == 1{
+				if es.Requests[f][btn]{
 					fmt.Print("|  #  ")
 				} else {
 					fmt.Print("|  -  ")

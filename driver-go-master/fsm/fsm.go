@@ -19,16 +19,18 @@ func Fsm_server(buttons chan elevio.ButtonEvent, floors chan int, obstr chan boo
 
 	case a := <-floors:
 		fmt.Printf("%+v\n", a)
+		fsm_onFloorArrival(a, elev)
 		
 
 	case a := <-obstr:
 		fmt.Printf("%+v\n", a)
-		
+		//lag ny funksjon her eller finnes det allerede?
 		
 
 	case a := <-stop:
 		fmt.Printf("%+v\n", a)
-		
+		//lag ny funksjon her eller finnes det allerede? tror det sto noe om at det
+		//ikke var definert noen oppførsel. kan velge selv?
 	}
 }
 
@@ -38,23 +40,20 @@ func fsm_onRequestButtonPress(buttons elevio.ButtonEvent, elev elevator.Elevator
 	
 	elevator.Elevator_print(elev)
 	
-	
-
-	
 	switch elev.Behaviour{
 	case elevator.EB_DoorOpen:
 		if(requests.RequestsShouldClearImmediately(elev, buttons.Floor, buttons.Button)){
 			print("TIMER INSERT HERE") //Sett inn timer
 			//timer_start(elev.doorOpenDuration)
 		} else {
-			elev.Requests[buttons.Floor][buttons.Button] = 1
+			elev.Requests[buttons.Floor][buttons.Button] = true
 		}
 		
 	case elevator.EB_Moving:
-		elev.Requests[buttons.Floor][buttons.Button] = 1
+		elev.Requests[buttons.Floor][buttons.Button] = true
 		
 	case elevator.EB_Idle:
-		elev.Requests[buttons.Floor][buttons.Button] = 1
+		elev.Requests[buttons.Floor][buttons.Button] = true
 		var pair requests.DirnBehaviourPair = requests.RequestsChooseDirection(elev)
 		elev.Dirn = pair.Dirn
 		elev.Behaviour = pair.Behaviour
@@ -76,19 +75,42 @@ func fsm_onRequestButtonPress(buttons elevio.ButtonEvent, elev elevator.Elevator
 
 
 
-func fsm_onInitBetweenFloors(e Elevator){
-	elevio.SetMotorDirection(elevio.MD_Down)
-	e.dirn = elevio.MD_Down
-	e.behaviour = elevator.EB_Moving
+func fsm_onFloorArrival(newFloor int, elev elevator.Elevator){
+
+	elevator.Elevator_print(elev)
+	
+	elev.Floor = newFloor   //dobbeltsjekk at det faktisk er den nye etasjen som blir tatt inn her
+	elevio.SetFloorIndicator(newFloor)
+
+	switch elev.Behaviour{
+	case elevator.EB_Moving:
+		if requests.Requests_shouldStop(elev){
+			elevio.SetMotorDirection(elevio.MD_Stop)
+			elevio.SetDoorOpenLamp(true)
+			elev = requests.RequestsClearAtCurrentFloor(elev)
+			print("TIMER INSERT HERE")  //Sett inn timer
+			//timer_start(elev.doorOpenDuration)
+			setAllLights(elev)
+			elev.Behaviour = elevator.EB_DoorOpen
+		}
+	}
+	print("\nNew state:\n")
+	elevator.Elevator_print(elev)
+	
 }
+
+
+
+//Lag fsm_onInitBetweenFloors?????
+
 
 
 
 
 func setAllLights(elev elevator.Elevator){
 	for floor := 0; floor < elevator.N_FLOORS; floor++{
-		for elevio.ButtonType btn := 0; btn < elevator.N_BUTTONS; btn++{  //Hvordan iterere gjennom buttontype enum??
-			if elev.Requests[floor][btn] == 1{
+		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab; btn++{  //Tror dette er fikset
+			if elev.Requests[floor][btn]{
 				elevio.SetButtonLamp(btn, floor, true) 
 			}
 		}
