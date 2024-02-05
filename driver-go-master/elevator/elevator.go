@@ -19,19 +19,19 @@ const (
 
 
 type Elevator struct{
-	floor int
-	dirn elevio.MotorDirection
-	requests[N_FLOORS][N_BUTTONS] int
-	behaviour ElevatorBehaviour
+	Floor int
+	Dirn elevio.MotorDirection
+	Requests[N_FLOORS][N_BUTTONS] int
+	Behaviour ElevatorBehaviour
 	
 	//Config
-	doorOpenDuration float64
+	DoorOpenDuration float64
 	
 }
 
 
 // return or print directly??
-func elevio_dirn_toString(md elevio.MotorDirection) string{
+func Elevio_dirn_toString(md elevio.MotorDirection) string{
 	if md == elevio.MD_Up{
 		return "MD_Up"
 	} else if md==elevio.MD_Down {
@@ -41,7 +41,7 @@ func elevio_dirn_toString(md elevio.MotorDirection) string{
 	}
 }
 
-func eb_toString(eb ElevatorBehaviour) string{
+func Eb_toString(eb ElevatorBehaviour) string{
 	if eb == EB_Idle{
 		return "EB_Idle"  
 	} else if eb==EB_DoorOpen {
@@ -52,11 +52,11 @@ func eb_toString(eb ElevatorBehaviour) string{
 }
 
 
-func elevator_print(es Elevator){
+func Elevator_print(es Elevator){
 	fmt.Print("  +--------------------+\n")
 	fmt.Printf("  |floor = %-2d|\n", es.floor)
-    fmt.Printf("  |dirn  = %-12.12s|\n", elevio_dirn_toString(es.dirn))
-    fmt.Print("  |behav = %-12.12s|\n", eb_toString(es.behaviour)) 
+    fmt.Printf("  |dirn  = %-12.12s|\n", Elevio_dirn_toString(es.dirn))
+    fmt.Print("  |behav = %-12.12s|\n", Eb_toString(es.behaviour)) 
 	fmt.Print("  +--------------------+\n")
 	fmt.Print("  |  | up  | dn  | cab |\n")
 	for f := N_FLOORS-1; f >= 0; f--{
@@ -80,7 +80,7 @@ func elevator_print(es Elevator){
 }
 
 
-func elevator_uninitialized(es *Elevator){  //initialize elevator, passing pointer
+func Elevator_uninitialized(es *Elevator){  //initialize elevator, passing pointer
 	es.floor = -1
 	es.dirn = elevio.MD_Stop
 	es.behaviour = EB_Idle
