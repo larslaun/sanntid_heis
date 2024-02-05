@@ -1,7 +1,13 @@
 package elevator
 
-import "Driver-go/elevio/elevator_io.go"
+import "Driver-go/elevio"
 import "fmt"
+
+
+//Deklarerer her foreløpig
+const N_FLOORS int = 4
+const N_BUTTONS int = 3
+
 
 type ElevatorBehaviour int
 
@@ -12,50 +18,59 @@ const (
 )
 
 
-type elevator struct{
-	floor int
-	dirn MotorDirection
-	requests[N_FLOORS][N_BUTTONS] int
-	behaviour int
+type Elevator struct{
+	Floor int
+	Dirn elevio.MotorDirection
+	Requests[N_FLOORS][N_BUTTONS] int
+	Behaviour ElevatorBehaviour
 	
 	//Config
-	doorOpenDuration double
+	DoorOpenDuration float64
 	
 }
 
 
-
-func eb_toString(eb ElevtorBehaviour) sting{
-	if eb == EB_Idle{
-		fmt.Print("EB_Idle")
-	} else if eb==EB_DoorOpen {
-		fmt.Print("EB_DoorOpen")
-	}else if eb==EB_Moving {
-		fmt.Print("EB_Moving")
+// return or print directly??
+func Elevio_dirn_toString(md elevio.MotorDirection) string{
+	if md == elevio.MD_Up{
+		return "MD_Up"
+	} else if md==elevio.MD_Down {
+		return "MD_Down"
+	}else{
+		return "MD_Stop"
 	}
 }
 
+func Eb_toString(eb ElevatorBehaviour) string{
+	if eb == EB_Idle{
+		return "EB_Idle"  
+	} else if eb==EB_DoorOpen {
+		return "EB_DoorOpen"
+	}else{
+		return "EB_Moving"
+	} 
+}
 
-func elevator_print(es Elevator){
+
+func Elevator_print(es Elevator){
 	fmt.Print("  +--------------------+\n")
-	fmt.Print(
-        "  |floor = %-2d          |\n"
-        "  |dirn  = %-12.12s|\n"
-        "  |behav = %-12.12s|\n",
-        es.floor,
-        elevio_dirn_toString(es.dirn),
-        eb_toString(es.behaviour))
-	fmt.Print("  +--------------------+\n");
-	fmt.Print("  |  | up  | dn  | cab |\n");
-	for(int f = N_FLOORS-1; f >= 0; f--){
+	fmt.Printf("  |floor = %-2d|\n", es.floor)
+    fmt.Printf("  |dirn  = %-12.12s|\n", Elevio_dirn_toString(es.dirn))
+    fmt.Print("  |behav = %-12.12s|\n", Eb_toString(es.behaviour)) 
+	fmt.Print("  +--------------------+\n")
+	fmt.Print("  |  | up  | dn  | cab |\n")
+	for f := N_FLOORS-1; f >= 0; f--{
 		fmt.Print("  | %d", f);
 		for btn := 0; btn < N_BUTTONS; btn++{
-			if (f == N_FLOORS-1 && btn == B_HallUp)  || 
-				(f == 0 && btn == B_HallDown) 
-			{
+			if (f == N_FLOORS-1 && btn == elevio.BT_HallUp)  || (f == 0 && btn == elevio.BT_HallDown){
 				fmt.Print("|     ");
 			} else {
-				fmt.Print(es.requests[f][btn] ? "|  #  " : "|  -  ");
+				if es.requests[f][btn] == 1{
+					fmt.Print("|  #  ")
+				} else {
+					fmt.Print("|  -  ")
+				}
+				//fmt.Print(es.requests[f][btn] ? "|  #  " : "|  -  "); replaced by if sentence over ^
 			}
 		}
 		fmt.Print("|\n");
@@ -65,9 +80,9 @@ func elevator_print(es Elevator){
 }
 
 
-func elevator_uninitialized(es *elevator){  //initialize elevator, passing pointer
+func Elevator_uninitialized(es *Elevator){  //initialize elevator, passing pointer
 	es.floor = -1
-	es.dirn = MD_Stop
+	es.dirn = elevio.MD_Stop
 	es.behaviour = EB_Idle
 	es.doorOpenDuration = 3.0
 }

@@ -25,7 +25,7 @@ const (
 type ButtonType int
 
 const (
-	BT_HallUp   ButtonType = 0
+	BT_HallUp   ButtonType = 0   //Hvorfor står buttontype kun bak hallup? trengs dette?
 	BT_HallDown            = 1
 	BT_Cab                 = 2
 )
@@ -197,3 +197,6 @@ func toBool(a byte) bool {
 	}
 	return b
 }
+
+
+
