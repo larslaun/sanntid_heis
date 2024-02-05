@@ -86,21 +86,12 @@ func requestsChooseDirection(e Elevator) DirnBehaviourPair {
 // a request in the direction it is already moving.
 func requests_shouldStop(e Elevator) int {
 	switch e.dirn {
-<<<<<<< HEAD
-	case D_Down:
-		return int(e.Requests[e.floor][B_HallDown] || e.Requests[e.floor][B_Cab] || !requestsBelow(e))
-	case D_Up:
-		return int(e.Requests[e.floor][B_HallUp] || e.Requests[e.floor][B_Cab] || !requestsAbove(e))
-	case D_Stop:
-		fallthroughMD_Stop,
-=======
 	case MD_Down:
 		return int(e.Requests[e.floor][BT_HallDown] || e.Requests[e.floor][BT_Cab] || !requestsBelow(e))
 	case MD_Up:
 		return int(e.Requests[e.floor][BT_HallUp] || e.Requests[e.floor][BT_Cab] || !requestsAbove(e))
 	case MD_Stop:
 		fallthrough
->>>>>>> 9b747f9723e3a99835d626bfd6df969843aaaadf
 	default:
 		return 1
 	}
@@ -118,9 +109,9 @@ func requestsShouldClearImmediately(e Elevator, btnFloor int, btnType Button) in
 // function clears request from the cab at the current floor.
 // if the elevator is going up and there are no more requests above or requests UP at the current floor, it will clear the DOWN-request.
 // It also clears requests for UP as default, there are either no requests there, or it continues to go UP.
-// If the elevetor state is Stop, it clears both UP and DOWN hall calls, probably only one of them at that floor, since the elevator door will open for one of (the first) the requests.
+// If the elevator state is Stop, it clears both UP and DOWN hall calls, probably only one of them at that floor, since the elevator door will open for one of (the first) the requests.
 func requestsClearAtCurrentFloor(e Elevator) Elevator {
-	e.requests[e.floor][B_Cab] = 0
+	e.requests[e.floor][BT_Cab] = 0
 
 	switch e.dirn {
 	case MD_Up:
