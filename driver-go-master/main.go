@@ -4,6 +4,7 @@ import (
 	"Driver-go/elevator"
 	"Driver-go/elevio"
 	"Driver-go/fsm"
+	"fmt"
 )
 
 func main() {
@@ -16,7 +17,12 @@ func main() {
 	//initalisere heis
 	var elev elevator.Elevator
 	elevator.Elevator_uninitialized(&elev)
+	if(elevio.GetFloor() == -1){
+		fsm.Fsm_onInitBetweenFloors(&elev)
+    }
 	//
+
+	
 
 	drv_buttons := make(chan elevio.ButtonEvent)
 	drv_floors := make(chan int)
@@ -27,6 +33,9 @@ func main() {
 	go elevio.PollFloorSensor(drv_floors)
 	go elevio.PollObstructionSwitch(drv_obstr)
 	go elevio.PollStopButton(drv_stop)
+
+	
+
 
 	for {
 		fsm.Fsm_server(drv_buttons, drv_floors, drv_obstr, drv_stop, elev)

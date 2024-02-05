@@ -7,6 +7,13 @@ import (
 	"fmt"
 )
 
+func Fsm_onInitBetweenFloors(elev *elevator.Elevator){
+	elevio.SetMotorDirection(elevio.MD_Down)
+	elev.Dirn = elevio.MD_Down	
+	elev.Behaviour = elevator.EB_Moving
+}
+
+
 
 func Fsm_server(buttons chan elevio.ButtonEvent, floors chan int, obstr chan bool, stop chan bool, elev elevator.Elevator){
 
@@ -100,8 +107,6 @@ func fsm_onFloorArrival(newFloor int, elev elevator.Elevator){
 }
 
 
-
-//Lag fsm_onInitBetweenFloors?????
 
 
 

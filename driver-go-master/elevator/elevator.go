@@ -56,11 +56,11 @@ func Elevator_print(es Elevator){
 	fmt.Print("  +--------------------+\n")
 	fmt.Printf("  |floor = %-2d|\n", es.Floor)
     fmt.Printf("  |dirn  = %-12.12s|\n", Elevio_dirn_toString(es.Dirn))
-    fmt.Print("  |behav = %-12.12s|\n", Eb_toString(es.Behaviour)) 
+    fmt.Printf("  |behav = %-12.12s|\n", Eb_toString(es.Behaviour)) 
 	fmt.Print("  +--------------------+\n")
 	fmt.Print("  |  | up  | dn  | cab |\n")
 	for f := N_FLOORS-1; f >= 0; f--{
-		fmt.Print("  | %d", f);
+		fmt.Printf("  | %d", f);
 		for btn := 0; btn < N_BUTTONS; btn++{
 			if (f == N_FLOORS-1 && btn == int(elevio.BT_HallUp))  || (f == 0 && btn == elevio.BT_HallDown){
 				fmt.Print("|     ");
@@ -81,7 +81,7 @@ func Elevator_print(es Elevator){
 
 
 func Elevator_uninitialized(es *Elevator){  //initialize elevator, passing pointer
-	es.Floor = -1
+	es.Floor = 1  //OBS! endret denne til 1 istedenfor -1 pga. index feil. Kan virke som dette funker siden man poller floor uansett og det vil bli endret til riktig
 	es.Dirn = elevio.MD_Stop
 	es.Behaviour = EB_Idle
 	es.DoorOpenDuration = 3.0
