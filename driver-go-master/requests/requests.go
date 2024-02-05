@@ -15,9 +15,9 @@ type DirnBehaviourPair struct {
 // checks if there are any requests for the elevator above it's current floor
 // by incrementing through each element in the "boolean" requests matrix.
 func RequestsAbove(e Elevator) bool {
-	for f := e.floor + 1; f < N_FLOORS; f++ {
+	for f := e.Floor + 1; f < N_FLOORS; f++ {
 		for btn := 0; btn < N_BUTTONS; btn++ {
-			if e.requests[f][btn] {
+			if e.Requests[f][btn] {
 				return 1
 			}
 		}
@@ -27,9 +27,9 @@ func RequestsAbove(e Elevator) bool {
 
 // checks if there are any requests for the elevator below it's current floor.
 func RequestsBelow(e Elevator) bool {
-	for f := 0; f < e.floor; f++ {
+	for f := 0; f < e.Floor; f++ {
 		for btn := 0; btn < N_BUTTONS; btn++ {
-			if e.requests[f][btn] {
+			if e.Requests[f][btn] {
 				return 1
 			}
 		}
@@ -40,7 +40,7 @@ func RequestsBelow(e Elevator) bool {
 // checks if there are any requests for the elevator at it's current floor
 func RequestsHere(e Elevator) bool {
 	for btn := 0; btn < N_BUTTONS; btn++ {
-		if e.requests[e.floor][btn] {
+		if e.Requests[e.Floor][btn] {
 			return 1
 		}
 	}
@@ -91,12 +91,12 @@ func RequestsChooseDirection(e elevator.Elevator) DirnBehaviourPair {
 
 // checks if the elevator should stop at it's current floor or not. It will only stop if the cab has ordered it to or there is a
 // a request in the direction it is already moving.
-func Requests_shouldStop(e Elevator) int {
-	switch e.dirn {
+func Requests_shouldStop(e Elevator) bool {
+	switch e.Dirn {
 	case MD_Down:
-		return int(e.Requests[e.floor][BT_HallDown] || e.Requests[e.floor][BT_Cab] || !RequestsBelow(e))
+		return int(e.Requests[e.Floor][BT_HallDown] || e.Requests[e.Floor][BT_Cab] || !RequestsBelow(e))
 	case MD_Up:
-		return int(e.Requests[e.floor][BT_HallUp] || e.Requests[e.floor][BT_Cab] || !RequestsAbove(e))
+		return int(e.Requests[e.Floor][BT_HallUp] || e.Requests[e.Floor][BT_Cab] || !RequestsAbove(e))
 	case MD_Stop:
 		fallthrough
 	default:
@@ -106,10 +106,10 @@ func Requests_shouldStop(e Elevator) int {
 
 // function where you can spesify a specific request type and it returns wether the request should be cleared or not.
 func RequestsShouldClearImmediately(e Elevator, btnFloor int, btnType Button) bool {
-	return e.floor == btnFloor &&
-		((e.dirn == MD_Up && btnType == BT_HallUp) ||
-			(e.dirn == MD_Down && btnType == BT_HallDown) ||
-			e.dirn == MD_Stop ||
+	return e.Floor == btnFloor &&
+		((e.Dirn == MD_Up && btnType == BT_HallUp) ||
+			(e.Dirn == MD_Down && btnType == BT_HallDown) ||
+			e.Dirn == MD_Stop ||
 			btnType == BT_Cab)
 }
 
@@ -118,22 +118,22 @@ func RequestsShouldClearImmediately(e Elevator, btnFloor int, btnType Button) bo
 // It also clears requests for UP as default, there are either no requests there, or it continues to go UP.
 // If the elevetor state is Stop, it clears both UP and DOWN hall calls, probably only one of them at that floor, since the elevator door will open for one of (the first) the requests.
 func RequestsClearAtCurrentFloor(e Elevator) Elevator {
-	e.requests[e.floor][B_Cab] = 0
+	e.Requests[e.Floor][B_Cab] = 0
 
-	switch e.dirn {
+	switch e.Dirn {
 	case MD_Up:
-		if !RequestsAbove(e) && !e.requests[e.floor][BT_HallUp] {
-			e.requests[e.floor][BT_HallDown] = 0
+		if !RequestsAbove(e) && !e.Requests[e.Floor][BT_HallUp] {
+			e.Requests[e.Floor][BT_HallDown] = 0
 		}
-		e.requests[e.floor][BT_HallUp] = 0
+		e.Requests[e.Floor][BT_HallUp] = 0
 	case MD_Down:
-		if !RequestsBelow(e) && !e.requests[e.floor][BT_HallDown] {
-			e.requests[e.floor][BT_HallUp] = 0
+		if !RequestsBelow(e) && !e.Requests[e.Floor][BT_HallDown] {
+			e.Requests[e.Floor][BT_HallUp] = 0
 		}
-		e.requests[e.floor][BT_HallDown] = 0
+		e.Requests[e.Floor][BT_HallDown] = 0
 	default:
-		e.requests[e.floor][BT_HallUp] = 0
-		e.requests[e.floor][BT_HallDown] = 0
+		e.Requests[e.Floor][BT_HallUp] = 0
+		e.Requests[e.Floor][BT_HallDown] = 0
 	}
 
 	return e
