@@ -38,7 +38,7 @@ func RequestsBelow(e elevator.Elevator) bool {
 
 // checks if there are any requests for the elevator at it's current floor
 func RequestsHere(e elevator.Elevator) bool {
-	for btn := 0; btn < elevator.N_BUTTONS-1; btn++ {
+	for btn := 0; btn < elevator.N_BUTTONS; btn++ {
 		if e.Requests[e.Floor][btn] {
 			return true
 		}
