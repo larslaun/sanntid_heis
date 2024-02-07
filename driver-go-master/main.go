@@ -1,10 +1,9 @@
 package main
 
 import (
-	"Driver-go/elevator"
+	
 	"Driver-go/elevio"
 	"Driver-go/fsm"
-	"fmt"
 )
 
 func main() {
@@ -14,13 +13,7 @@ func main() {
 	elevio.Init("localhost:15657", numFloors)
 
 
-	//initalisere heis
-	var elev elevator.Elevator
-	elevator.Elevator_uninitialized(&elev)
-	if(elevio.GetFloor() == -1){
-		fsm.Fsm_onInitBetweenFloors(&elev)
-    }
-	//
+	
 
 	
 
@@ -37,7 +30,7 @@ func main() {
 	
 
 
-	for {
-		fsm.Fsm_server(drv_buttons, drv_floors, drv_obstr, drv_stop, elev)
-	}
+	
+	fsm.Fsm_server(drv_buttons, drv_floors, drv_obstr, drv_stop)
+	
 }
