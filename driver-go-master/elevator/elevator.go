@@ -25,7 +25,7 @@ type Elevator struct{
 	Behaviour ElevatorBehaviour
 	
 	//Config
-	DoorOpenDuration float64
+	DoorOpenDuration int
 	
 }
 
@@ -84,5 +84,5 @@ func Elevator_uninitialized(es *Elevator){  //initialize elevator, passing point
 	es.Floor = 1  //OBS! endret denne til 1 istedenfor -1 pga. index feil. Kan virke som dette funker siden man poller floor uansett og det vil bli endret til riktig
 	es.Dirn = elevio.MD_Stop
 	es.Behaviour = EB_Idle
-	es.DoorOpenDuration = 3.0
+	es.DoorOpenDuration = 3
 }
