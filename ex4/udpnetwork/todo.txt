@@ -1,0 +1,4 @@
+- Endre struktur til nettverk slik at den åpner kontakt, og så skriver og leser over kontakten
+- må ha backup for å motta meldinger når de sendes
+- for-løkker for backup og primary 
+- Implementere read deadline i udpRead som WD-timer type greie
