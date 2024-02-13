@@ -17,7 +17,7 @@ func main() {
 
 	
 	
-	 if no message recieved {
+	if no message recieved {
 		fmt.Print("Spawning backup\n")
 		exec.Command("gnome-terminal", "--", "go", "run", "backup/backup.go").Run()
 
