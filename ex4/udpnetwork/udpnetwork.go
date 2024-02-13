@@ -3,6 +3,7 @@ package udpnetwork
 import (
 	"fmt"
 	"net"
+	"time"
 )
 
 func WriteToServerUDP() {
@@ -23,17 +24,25 @@ func WriteToServerUDP() {
 func ReadfromServerUDP() {
 	raddr, err := net.ResolveUDPAddr("udp", ":20007")
 
-	msg, err := net.ListenUDP("udp", raddr)
+	conn, err := net.ListenUDP("udp", raddr)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
 
 	buffer := make([]byte, 1024)
+	conn.SetReadDeadline(time.Now().Add(1 * time.Second))
+	_, _, err = conn.ReadFromUDP(buffer[0:])
 
-	msg.Read(buffer[0:])
+	if err != nil {
+		panic(err)
+		
+	}
 
-	fmt.Print("From server: ", string(buffer[0:]))
 	
-	msg.Close()
+
+	
+	fmt.Print("From server: ", string(buffer[0:]))
+
+	conn.Close()
 }

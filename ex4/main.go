@@ -2,11 +2,12 @@ package main
 
 import (
 	
-	/* "ex4/backup"
-	"ex4/primary" */
-	"ex4/udpnetwork"
-	"time"
 	"fmt"
+	"os/exec"	
+	"os"
+	"net"
+	"time"
+	//"strconv"
 )
 
 
@@ -14,35 +15,64 @@ import (
 
 func main() {
 	
+	raddr, _ := net.ResolveUDPAddr("udp", ":20008")
+	
+	
+	recieve, _ := net.ListenUDP("udp", raddr)
 
 	
 	
-	 if no message recieved {
-		fmt.Print("Spawning backup\n")
-		exec.Command("gnome-terminal", "--", "go", "run", "backup/backup.go").Run()
+	defer recieve.Close()
 
-		
-		for{
-		
-			udpnetwork.WriteToServerUDP()
-			time.Sleep(time.Duration(1) * time.Second)
 
-			fmt.Printf("\n%d\n", i)
-			i++
-			if i == 3 {
-				os.Exit(0)
-			}
+	for{
+		buffer := make([]byte, 1024)
+		recieve.SetReadDeadline(time.Now().Add(2 * time.Second))
+		_, _, err := recieve.ReadFromUDP(buffer[0:])
+
+		fmt.Printf("Message recieved:",string(buffer[0:]))
+		if err!=nil {
+			break
 		}
-	} else{
-		i++
 	}
+	
+	
+	
+
+	send, _ := net.DialUDP("udp", nil, raddr)
+		
 
 
+	defer send.Close()
 
-	/* go primary.Primary()	
-	go backup.Backup()
+	fmt.Print("Spawning backup\n")
+	exec.Command("gnome-terminal", "--", "go", "run", "main.go").Run()
+
+	for{
+		
+		i:=0
+		i++
+		if i == 5 {
+			os.Exit(0)
+		}
+
+		message := []byte("test")
+
+		_, err := send.WriteToUDP(message, raddr)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+
+		time.Sleep(time.Duration(1) * time.Second)
+
+		fmt.Printf("\n%d\n", i)
+		
+
+		
+	}
+	
 
 
-	select{} */
+	
 
 }
