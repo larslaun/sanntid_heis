@@ -1,0 +1,38 @@
+
+Network module
+I: int goToFloor, array, unfulfilled calls, 
+O: 
+
+-Create working send and recieve functions
+-Implement acknowledgement and resend
+
+
+
+Elevator logic
+I: 
+O: 
+-Implement gotofloor functionality. Should be able to get one floor order from master and go to that floor. Can stop at optimal floors inbetween if logical
+-Implement sending to master which order has been fulfilled
+
+
+
+Processing pairs
+I: 
+O: 
+-Implement in elevator fsm, one backup where all elevator states and orders are sent 
+
+
+
+Master/slave module(?)
+I: 
+O: 
+-Needs init functionality. Here we can decide ID for elevators manually. 
+-functionality for changing between master and slave. 
+    -How to check if elevators are disconnected? Use order list message as "im alive" signal, if not recieved in certain time, assume elev is disconnected.
+-Implement list for alive elevs?
+-Should we have version history/id for order lists?  
+
+
+Button lights
+-Only turn on after master has distributed order list and recieved ack
+
