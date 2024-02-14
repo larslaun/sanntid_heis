@@ -16,14 +16,9 @@ import (
 func main() {
 	
 	raddr, _ := net.ResolveUDPAddr("udp", ":20008")
-	
-	
 	recieve, _ := net.ListenUDP("udp", raddr)
 
-	
-	
 	defer recieve.Close()
-
 
 	for{
 		buffer := make([]byte, 1024)
@@ -36,13 +31,8 @@ func main() {
 		}
 	}
 	
-	
-	
-
 	send, _ := net.DialUDP("udp", nil, raddr)
 		
-
-
 	defer send.Close()
 
 	fmt.Print("Spawning backup\n")
