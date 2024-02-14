@@ -56,13 +56,5 @@ func main() {
 		time.Sleep(time.Duration(1) * time.Second)
 
 		fmt.Printf("\n%d\n", i)
-		
-
-		
 	}
-	
-
-
-	
-
 }
