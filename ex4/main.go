@@ -1,54 +1,62 @@
 package main
 
 import (
-	
 	"fmt"
-	"os/exec"	
-	"os"
 	"net"
+	"os/exec"
+	"strconv"
 	"time"
-	//"strconv"
 )
 
-
-
-
 func main() {
-	
-	raddr, _ := net.ResolveUDPAddr("udp", ":20008")
+
+	raddr, _ := net.ResolveUDPAddr("udp", ":20011")
 	recieve, _ := net.ListenUDP("udp", raddr)
 
 	defer recieve.Close()
+	print("This is slave\n")
 
-	for{
+	msg := 0
+
+	for {
+
 		buffer := make([]byte, 1024)
 		recieve.SetReadDeadline(time.Now().Add(2 * time.Second))
-		_, _, err := recieve.ReadFromUDP(buffer[0:])
+		n, _, err := recieve.ReadFromUDP(buffer[0:])
 
-		fmt.Printf("Message recieved:",string(buffer[0:]))
-		if err!=nil {
+		if err != nil {
 			break
 		}
-	}
-	
-	send, _ := net.DialUDP("udp", nil, raddr)
+
+		msg, _ = strconv.Atoi(string(buffer[:n]))
+
 		
-	defer send.Close()
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
+
+
+		fmt.Printf("MSG VAL: %d\n", msg)
+		fmt.Printf("Message recieved: %v\n", string(buffer[0:]))
+	}
+	recieve.Close()
+
+	fmt.Printf("MSG: %d", msg)
+	i := msg
 
 	fmt.Print("Spawning backup\n")
 	exec.Command("gnome-terminal", "--", "go", "run", "main.go").Run()
+	time.Sleep(1 * time.Second)
+	send, _ := net.DialUDP("udp", nil, raddr)
+	defer send.Close()
+	print("This is master\n")
 
-	for{
+	for {
+
 		
-		i:=0
-		i++
-		if i == 5 {
-			os.Exit(0)
-		}
+		message := []byte(strconv.Itoa(i))
 
-		message := []byte("test")
-
-		_, err := send.WriteToUDP(message, raddr)
+		_, err := send.Write(message)
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
@@ -56,5 +64,8 @@ func main() {
 		time.Sleep(time.Duration(1) * time.Second)
 
 		fmt.Printf("\n%d\n", i)
+		i++
+
 	}
+
 }
