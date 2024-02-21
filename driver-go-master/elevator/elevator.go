@@ -25,8 +25,7 @@ type Elevator struct{
 	Behaviour ElevatorBehaviour
 	
 	//Config
-	DoorOpenDuration int
-	
+	DoorOpenDuration int	
 }
 
 
