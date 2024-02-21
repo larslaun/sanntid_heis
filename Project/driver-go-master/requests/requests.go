@@ -1,8 +1,8 @@
 package requests
 
 import (
-	"Driver-go/elevator"
-	"Driver-go/elevio"
+	"Elev-project/driver-go-master/elevator"
+	"Elev-project/driver-go-master/elevio"
 )
 
 

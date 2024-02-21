@@ -1,6 +1,6 @@
 package elevator
 
-import "Driver-go/elevio"
+import "Elev-project/driver-go-master/elevio"
 import "fmt"
 
 
@@ -85,3 +85,5 @@ func Elevator_uninitialized(es *Elevator){  //initialize elevator, passing point
 	es.Behaviour = EB_Idle
 	es.DoorOpenDuration = 3
 }
+
+

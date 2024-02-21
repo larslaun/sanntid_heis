@@ -5,6 +5,7 @@ O:
 
 -Create working send and recieve functions
 -Implement acknowledgement and resend
+-Broadcast to everyone?
 
 
 
@@ -31,6 +32,7 @@ O:
     -How to check if elevators are disconnected? Use order list message as "im alive" signal, if not recieved in certain time, assume elev is disconnected.
 -Implement list for alive elevs?
 -Should we have version history/id for order lists?  
+-Fleeting master? elevator that recieves order calculates optimal elevator to complete order and distributes. All elevator states known by all elevators
 
 
 Button lights

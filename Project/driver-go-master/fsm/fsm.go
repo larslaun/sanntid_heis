@@ -1,9 +1,9 @@
 package fsm
 
 import (
-	"Driver-go/elevator"
-	"Driver-go/elevio"
-	"Driver-go/requests"
+	"Elev-project/driver-go-master/elevator"
+	"Elev-project/driver-go-master/elevio"
+	"Elev-project/driver-go-master/requests"
 	"fmt"
 	"time"
 )
@@ -16,24 +16,8 @@ func Fsm_onInitBetweenFloors(elev *elevator.Elevator) {
 	elev.Behaviour = elevator.EB_Moving
 }
 
-func Fsm_server(buttons chan elevio.ButtonEvent, floors chan int, obstr chan bool, stop chan bool) {
-
-	//initalisere heis
-	var elev elevator.Elevator
-	elevator.Elevator_uninitialized(&elev)
-	if elevio.GetFloor() == -1 {
-		Fsm_onInitBetweenFloors(&elev)
-	}
-	setAllLights(elev)
-	for floor := 0; floor < elevator.N_FLOORS; floor++ {
-		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++ { //Tror dette er fikset, ønsker vi +1?
-			elevio.SetButtonLamp(btn, floor, false)
-		}
-	}
-
-	print("\nElevator initialized at following state: \n")
-	elevator.Elevator_print(elev)
-	//
+func Fsm_server(buttons chan elevio.ButtonEvent, floors chan int, obstr chan bool, stop chan bool, elev elevator.Elevator) {
+	
 
 	for {
 		select {
@@ -161,4 +145,23 @@ func onDoorTimeout(elev *elevator.Elevator) {
 	print("\nNew state:\n")
 	elevator.Elevator_print(*elev)
 
+}
+
+
+func Elev_init() elevator.Elevator{
+	var elev elevator.Elevator
+	elevator.Elevator_uninitialized(&elev)
+	if elevio.GetFloor() == -1 {
+		Fsm_onInitBetweenFloors(&elev)
+	}
+	setAllLights(elev)
+	for floor := 0; floor < elevator.N_FLOORS; floor++ {
+		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++ { //Tror dette er fikset, ønsker vi +1?
+			elevio.SetButtonLamp(btn, floor, false)
+		}
+	}
+
+	print("\nElevator initialized at following state: \n")
+	elevator.Elevator_print(elev)
+	return elev
 }
