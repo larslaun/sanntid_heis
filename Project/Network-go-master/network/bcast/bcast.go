@@ -1,7 +1,7 @@
 package bcast
 
 import (
-	"Network-go/network/conn"
+	"Elev-project/Network-go-master/network/conn"
 	"encoding/json"
 	"fmt"
 	"net"

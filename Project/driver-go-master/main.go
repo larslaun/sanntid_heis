@@ -39,6 +39,10 @@ func main() {
 	go elevio.PollObstructionSwitch(drv_obstr)
 	go elevio.PollStopButton(drv_stop)
 
+	
+
+
+	
 	fsm.Fsm_server(drv_buttons, drv_floors, drv_obstr, drv_stop)
 	
 }
