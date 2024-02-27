@@ -7,6 +7,21 @@ O:
 -Implement acknowledgement and resend
 -Broadcast to everyone?
 
+Acknowledgements;
+Sender:
+1. Broadcast message to all peers.
+2. Wait for acknowledgments from all peers.
+3. If acknowledgments are received from all peers, consider the message delivered. Else, retransmit the message. 
+
+Receiver:
+1. Upon receiving a message, the message should be processed and an acknowledgment should be sent.
+    - The acknowledgment message should contain information to identify the sender.
+
+Acknowledgment Message:
+- Structure:
+  - SenderID: ID of the sender.
+  - Success: Flag indicating successful receipt of the message.
+
 
 
 Elevator logic
