@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"os"
 	"time"
+	"net"
+	"os/exec"
 )
 
 func main() {
@@ -51,9 +53,50 @@ func main() {
 	go bcast.Transmitter(16569, elevStateTx)
 	go bcast.Receiver(16569, elevStateRx)
 
-	numFloors := 4
 
+
+
+
+	numFloors := 4
 	elevio.Init("localhost:15657", numFloors)
+	var elev elevator.Elevator = fsm.Elev_init()
+
+
+	//Processing pairs
+	raddr, _ := net.ResolveUDPAddr("udp", ":16569")
+	recieve, _ := net.ListenUDP("udp", raddr)
+	defer recieve.Close()
+	print("This is slave\n")
+	for{
+		buffer := make([]byte, 1024)
+		recieve.SetReadDeadline(time.Now().Add(2 * time.Second))
+		_, _, err := recieve.ReadFromUDP(buffer[0:])
+		if err != nil {
+			break
+		}
+		select{
+		case elev = <-elevStateRx:
+			fmt.Print("\n\nElev msg recieved:\n")
+			elevator.Elevator_print(elev)
+			fmt.Print("\n\n")
+			
+		}
+	}
+	recieve.Close()
+	fmt.Print("Spawning backup\n")
+	exec.Command("gnome-terminal", "--", "go", "run", "main.go").Run()
+	time.Sleep(1 * time.Second)
+	
+	print("This is now master\n")
+
+
+
+
+
+
+
+
+
 
 	drv_buttons := make(chan elevio.ButtonEvent)
 	drv_floors := make(chan int)
@@ -65,7 +108,7 @@ func main() {
 	go elevio.PollObstructionSwitch(drv_obstr)
 	go elevio.PollStopButton(drv_stop)
 
-	var elev elevator.Elevator = fsm.Elev_init()
+	
 
 	// The example message. We just send one of these every second.
 
@@ -81,6 +124,7 @@ func main() {
 	for {
 		//fsm.Fsm_server(drv_buttons, drv_floors, drv_obstr, drv_stop, &elev)
 
+
 		fmt.Print("\n\nElev print main:\n")
 		elevator.Elevator_print(elev)
 		fmt.Print("\n\n")
@@ -94,6 +138,16 @@ func main() {
 		case a := <-drv_floors:
 			fmt.Printf("%+v\n", a)
 			fsm.Fsm_onFloorArrival(a, &elev)
+
+		case a := <-drv_obstr:
+			fmt.Printf("%+v\n", a)
+			//lag ny funksjon her eller finnes det allerede?
+
+		case a := <-drv_stop:
+			fmt.Printf("%+v\n", a)
+			//lag ny funksjon her eller finnes det allerede? tror det sto noe om at det
+			//ikke var definert noen oppførsel. kan velge selv?
+
 
 		case p := <-peerUpdateCh:
 			fmt.Printf("Peer update:\n")
