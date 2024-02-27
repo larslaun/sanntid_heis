@@ -16,18 +16,17 @@ func Fsm_onInitBetweenFloors(elev *elevator.Elevator) {
 	elev.Behaviour = elevator.EB_Moving
 }
 
-func Fsm_server(buttons chan elevio.ButtonEvent, floors chan int, obstr chan bool, stop chan bool, elev elevator.Elevator) {
+func Fsm_server(buttons chan elevio.ButtonEvent, floors chan int, obstr chan bool, stop chan bool, elev *elevator.Elevator) {
 	
 
-	for {
 		select {
 		case a := <-buttons:
 			fmt.Printf("%+v\n", a)
-			fsm_onRequestButtonPress(a, &elev)
+			Fsm_onRequestButtonPress(a, elev)
 
 		case a := <-floors:
 			fmt.Printf("%+v\n", a)
-			fsm_onFloorArrival(a, &elev)
+			Fsm_onFloorArrival(a, elev)
 
 		case a := <-obstr:
 			fmt.Printf("%+v\n", a)
@@ -39,12 +38,12 @@ func Fsm_server(buttons chan elevio.ButtonEvent, floors chan int, obstr chan boo
 			//ikke var definert noen oppførsel. kan velge selv?
 
 		}
-	}
+	
 }
 
-func fsm_onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevator) {
+func Fsm_onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevator) {
 
-	elevator.Elevator_print(*elev)
+	//elevator.Elevator_print(*elev)
 
 	switch elev.Behaviour {
 	case elevator.EB_DoorOpen:
@@ -79,12 +78,12 @@ func fsm_onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevato
 	}
 	setAllLights(*elev)
 	print("\nNew state:\n")
-	elevator.Elevator_print(*elev)
+	//elevator.Elevator_print(*elev)
 }
 
-func fsm_onFloorArrival(newFloor int, elev *elevator.Elevator) {
+func Fsm_onFloorArrival(newFloor int, elev *elevator.Elevator) {
 
-	elevator.Elevator_print(*elev)
+	//elevator.Elevator_print(*elev)
 
 	elev.Floor = newFloor //dobbeltsjekk at det faktisk er den nye etasjen som blir tatt inn her
 	elevio.SetFloorIndicator(newFloor)
@@ -105,7 +104,7 @@ func fsm_onFloorArrival(newFloor int, elev *elevator.Elevator) {
 		}
 	}
 	print("\nNew state:\n")
-	elevator.Elevator_print(*elev)
+	//elevator.Elevator_print(*elev)
 
 }
 
@@ -143,7 +142,7 @@ func onDoorTimeout(elev *elevator.Elevator) {
 
 	}
 	print("\nNew state:\n")
-	elevator.Elevator_print(*elev)
+	//elevator.Elevator_print(*elev)
 
 }
 
@@ -162,6 +161,6 @@ func Elev_init() elevator.Elevator{
 	}
 
 	print("\nElevator initialized at following state: \n")
-	elevator.Elevator_print(elev)
+	//elevator.Elevator_print(elev)
 	return elev
 }

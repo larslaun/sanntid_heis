@@ -13,19 +13,14 @@ import (
 	"time"
 )
 
-
 func main() {
 	// Our id can be anything. Here we pass it on the command line, using
 	//  `go run main.go -id=our_id`
-
-	
 
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer")
 	flag.Parse()
 
-
-	
 	// ... or alternatively, we can use the local IP address.
 	// (But since we can run multiple programs on the same PC, we also append the
 	//  process ID)
@@ -38,8 +33,6 @@ func main() {
 		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
 	}
 
-	
-
 	// We make a channel for receiving updates on the id's of the peers that are
 	//  alive on the network
 	peerUpdateCh := make(chan peers.PeerUpdate)
@@ -49,31 +42,19 @@ func main() {
 	go peers.Transmitter(15647, id, peerTxEnable)
 	go peers.Receiver(15647, peerUpdateCh)
 
-	
-
-
 	// We make channels for sending and receiving our custom data types
-	helloTx := make(chan elevator.Elevator)
-	helloRx := make(chan elevator.Elevator)
+	elevStateTx := make(chan elevator.Elevator)
+	elevStateRx := make(chan elevator.Elevator)
 	// ... and start the transmitter/receiver pair on some port
 	// These functions can take any number of channels! It is also possible to
 	//  start multiple transmitters/receivers on the same port.
-	go bcast.Transmitter(16569, helloTx)
-	go bcast.Receiver(16569, helloRx)
-
-	
-
-
-
-
+	go bcast.Transmitter(16569, elevStateTx)
+	go bcast.Receiver(16569, elevStateRx)
 
 	numFloors := 4
 
-	
 	elevio.Init("localhost:15657", numFloors)
 
-	
-	
 	drv_buttons := make(chan elevio.ButtonEvent)
 	drv_floors := make(chan int)
 	drv_obstr := make(chan bool)
@@ -84,51 +65,48 @@ func main() {
 	go elevio.PollObstructionSwitch(drv_obstr)
 	go elevio.PollStopButton(drv_stop)
 
-	
-	
 	var elev elevator.Elevator = fsm.Elev_init()
 
-
-
 	// The example message. We just send one of these every second.
-	
-	go func() {
-		var testelev elevator.Elevator
-		elevator.Elevator_uninitialized(&testelev)
-		
-		helloMsg := testelev
 
-		//helloMsg := HelloMsg{"Hello from " + id, 0}
+	go func() {
+
 		for {
 			//helloMsg.Iter++
-			helloTx <- helloMsg
+			elevStateTx <- elev
 			time.Sleep(1 * time.Second)
 		}
 	}()
-	
 
+	for {
+		//fsm.Fsm_server(drv_buttons, drv_floors, drv_obstr, drv_stop, &elev)
 
+		fmt.Print("\n\nElev print main:\n")
+		elevator.Elevator_print(elev)
+		fmt.Print("\n\n")
 
-
-
-	for{
-		fsm.Fsm_server(drv_buttons, drv_floors, drv_obstr, drv_stop, elev)
-		
-		
 		select {
+
+		case a := <-drv_buttons:
+			fmt.Printf("%+v\n", a)
+			fsm.Fsm_onRequestButtonPress(a, &elev)
+
+		case a := <-drv_floors:
+			fmt.Printf("%+v\n", a)
+			fsm.Fsm_onFloorArrival(a, &elev)
+
 		case p := <-peerUpdateCh:
 			fmt.Printf("Peer update:\n")
 			fmt.Printf("  Peers:    %q\n", p.Peers)
 			fmt.Printf("  New:      %q\n", p.New)
 			fmt.Printf("  Lost:     %q\n", p.Lost)
 
-		case a := <-helloRx:
-			//fmt.Printf("Received: %#v\n", a)
+		case a := <-elevStateRx:
+			fmt.Print("\n\nElev msg recieved:\n")
 			elevator.Elevator_print(a)
+			fmt.Print("\n\n")
 		}
-		
+
 	}
-
-
 
 }
