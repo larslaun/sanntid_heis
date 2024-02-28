@@ -12,7 +12,7 @@ const travleTime = 5
 const N_FLOORS int = 4
 const N_BUTTONS int = 3
 
-func timeToIdle(elevSim elevator.Elevator) int {
+func TimeToIdle(elevSim elevator.Elevator) int {
 
 	var Duration int = 0
 
