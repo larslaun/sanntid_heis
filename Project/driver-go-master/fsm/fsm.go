@@ -147,13 +147,12 @@ func onDoorTimeout(elev *elevator.Elevator) {
 }
 
 
-func Elev_init() elevator.Elevator{
-	var elev elevator.Elevator
-	elevator.Elevator_uninitialized(&elev)
-	if elevio.GetFloor() == -1 {
-		Fsm_onInitBetweenFloors(&elev)
-	}
-	setAllLights(elev)
+func Elev_init(elev *elevator.Elevator) {
+	elevator.Elevator_uninitialized(elev)
+	//if elevio.GetFloor() == -1 {
+		Fsm_onInitBetweenFloors(elev)
+	//}
+	setAllLights(*elev)
 	for floor := 0; floor < elevator.N_FLOORS; floor++ {
 		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++ { //Tror dette er fikset, ønsker vi +1?
 			elevio.SetButtonLamp(btn, floor, false)
@@ -161,6 +160,5 @@ func Elev_init() elevator.Elevator{
 	}
 
 	print("\nElevator initialized at following state: \n")
-	//elevator.Elevator_print(elev)
-	return elev
+	elevator.Elevator_print(*elev)	
 }
