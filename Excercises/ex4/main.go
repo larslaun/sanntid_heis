@@ -12,7 +12,7 @@ func main() {
 
 	raddr, _ := net.ResolveUDPAddr("udp", ":20011")
 	recieve, _ := net.ListenUDP("udp", raddr)
-
+	print(recieve)
 	defer recieve.Close()
 	print("This is slave\n")
 

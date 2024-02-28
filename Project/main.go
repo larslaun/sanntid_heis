@@ -20,7 +20,6 @@ func main() {
 
 	// Our id can be anything. Here we pass it on the command line, using
 	//  `go run main.go -id=our_id`
-
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer")
 	flag.Parse()
@@ -77,10 +76,10 @@ func main() {
 	exec.Command("gnome-terminal", "--", "go", "run", "main.go").Run()
 	print("This is now master\n")
 
+
+
 	numFloors := 4
 	elevio.Init("localhost:15657", numFloors)
-
-	
 	fsm.Elev_init(&elev)
 	
 
