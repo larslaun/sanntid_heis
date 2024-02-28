@@ -84,6 +84,7 @@ func main() {
 	fsm.Elev_init(&elev)
 	
 
+	
 
 
 	drv_buttons := make(chan elevio.ButtonEvent)

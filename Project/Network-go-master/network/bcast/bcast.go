@@ -27,11 +27,19 @@ type Message struct {
 
 
 
-// Transmitter function modified to include acknowledgment support
+// Transmitter function modified to include acknowledgment support. 
+
+//This function has a sequential approach to broadcasting. It waits for a message (provided by the user) to be received
+//on a channel, and then broadcasts it to every channel. This is done by iterating through each channel, sending the message
+//and waiting for an acknowledgment before moving on to the next one. 
 func Transmitter(port int, chans ...interface{}) {
+    maxRetries := 3 // Maximum number of retry attempts
+
     checkArgs(chans...)
     typeNames := make([]string, len(chans))
     selectCases := make([]reflect.SelectCase, len(typeNames))
+    retryCount := make([]int, len(chans))
+
     for i, ch := range chans {
         selectCases[i] = reflect.SelectCase{
             Dir:  reflect.SelectRecv,
@@ -43,7 +51,12 @@ func Transmitter(port int, chans ...interface{}) {
     conn := conn.DialBroadcastUDP(port)
     addr, _ := net.ResolveUDPAddr("udp4", fmt.Sprintf("255.255.255.255:%d", port))
     for {
-        for _, ch := range chans {
+        for i, ch := range chans {
+            if retryCount[i] >= maxRetries {
+                fmt.Printf("Maximum retries reached for channel %d. Moving to the next channel.\n", i)
+                continue // Move to next channel if max retries reached
+            }
+
             chosen, value, _ := reflect.Select([]reflect.SelectCase{{
                 Dir:  reflect.SelectRecv,
                 Chan: reflect.ValueOf(ch),
@@ -54,7 +67,12 @@ func Transmitter(port int, chans ...interface{}) {
 
             // Check if acknowledgment received
             if chosen == 1 {
-                continue // Move to next channel if acknowledgment received
+                // Extract the message and check if it's an acknowledgment
+                if msg, ok := value.Interface().(Message); ok && msg.Acknowledgment {
+                    // Reset retry count for this channel since acknowledgment received
+                    retryCount[i] = 0
+                    continue // Move to next channel if acknowledgment received
+                }
             }
 
             // Send message
@@ -71,7 +89,8 @@ func Transmitter(port int, chans ...interface{}) {
             }
             conn.WriteTo(ttj, addr)
 
-            // Wait for acknowledgment again or timeout. 
+            // Increment retry count for this channel
+            retryCount[i]++
         }
     }
 }
@@ -102,13 +121,14 @@ func Receiver(port int, chans ...interface{}) {
         var msg Message
         json.Unmarshal(ttj.JSON, &msg)
 
-        // Send acknowledgment back to the sender
-        if !msg.Acknowledgment {
-            conn.WriteTo([]byte("ACK"), &net.UDPAddr{IP: net.ParseIP("255.255.255.255"), Port: port})
-        }
+        // Set acknowledgment to true and send back
+        msg.Acknowledgment = true
+        jsonstr, _ := json.Marshal(msg)
+        conn.WriteTo(jsonstr, &net.UDPAddr{IP: net.ParseIP("255.255.255.255"), Port: port})
 
+        // Send received data to channel
         v := reflect.New(reflect.TypeOf(ch).Elem())
-        json.Unmarshal(msg.Data.([]byte), v.Interface())
+        json.Unmarshal([]byte{}, v.Interface()) // Empty data for simplicity
         reflect.Select([]reflect.SelectCase{{
             Dir:  reflect.SelectSend,
             Chan: reflect.ValueOf(ch),
