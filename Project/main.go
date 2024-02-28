@@ -7,6 +7,7 @@ import (
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
 	"Elev-project/driver-go-master/fsm"
+	"Elev-project/driver-go-master/cost_function"
 	"flag"
 	"fmt"
 	"os"
@@ -115,6 +116,11 @@ func main() {
 		fmt.Print("\n\nElev print main:\n")
 		elevator.Elevator_print(elev)
 		fmt.Print("\n\n")
+		
+
+		
+		i := cost_function.TimeToIdle(elev)
+		fmt.Printf("\nTime to idle: %d\n", i)
 
 		select {
 
@@ -142,9 +148,11 @@ func main() {
 			fmt.Printf("  Lost:     %q\n", p.Lost)
 
 		case a := <-elevStateRx:
+		
 			fmt.Print("\n\nElev msg recieved:\n")
 			elevator.Elevator_print(a)
 			fmt.Print("\n\n")
+			
 		}
 
 	}
