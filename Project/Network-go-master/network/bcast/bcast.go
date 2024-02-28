@@ -71,7 +71,7 @@ func Transmitter(port int, chans ...interface{}) {
             }
             conn.WriteTo(ttj, addr)
 
-            // Wait for acknowledgment again or timeout
+            // Wait for acknowledgment again or timeout. 
         }
     }
 }
