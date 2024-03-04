@@ -37,48 +37,23 @@ func main() {
 		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
 	}
 
-	// We make a channel for receiving updates on the id's of the peers that are
-	//  alive on the network
+	
 	peerUpdateCh := make(chan peers.PeerUpdate)
-	// We can disable/enable the transmitter after it has been started.
-	// This could be used to signal that we are somehow "unavailable".
 	peerTxEnable := make(chan bool)
 	go peers.Transmitter(15647, id, peerTxEnable)
 	go peers.Receiver(15647, peerUpdateCh)
 
-	// We make channels for sending and receiving our custom data types
 	elevStateTx := make(chan elevator.Elevator)
 	elevStateRx := make(chan elevator.Elevator)
-	// ... and start the transmitter/receiver pair on some port
-	// These functions can take any number of channels! It is also possible to
-	//  start multiple transmitters/receivers on the same port.
 	go bcast.Transmitter(20008, elevStateTx)
 	go bcast.Receiver(20008, elevStateRx)
 
+
+	//Legg inn elevOrder channel?
+
+
+
 	var elev elevator.Elevator
-
-	//Processing pairs
-	print("This is slave\n")
-	timer1 := time.NewTimer(2 * time.Second)
-	
-	backupLoop:
-		for {
-			select {
-			case elev = <-elevStateRx:
-				fmt.Print("\n\nElev msg recieved:\n")
-				elevator.Elevator_print(elev)
-				fmt.Print("\n\n")
-				timer1.Reset(2 * time.Second)
-			case <-timer1.C:
-				break backupLoop
-			}
-		}
-	fmt.Print("Spawning backup\n")
-	exec.Command("gnome-terminal", "--", "go", "run", "main.go").Run()
-	print("This is now master\n")
-
-
-
 	numFloors := 4
 	elevio.Init("localhost:15657", numFloors)
 	fsm.Elev_init(&elev, id)
