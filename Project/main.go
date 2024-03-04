@@ -81,7 +81,7 @@ func main() {
 
 	numFloors := 4
 	elevio.Init("localhost:15657", numFloors)
-	fsm.Elev_init(&elev)
+	fsm.Elev_init(&elev, id)
 	
 
 	

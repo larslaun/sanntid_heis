@@ -23,7 +23,8 @@ type Elevator struct{
 	Dirn elevio.MotorDirection
 	Requests[N_FLOORS][N_BUTTONS] bool //OBS!! endret denne fra int til bool. ok?
 	Behaviour ElevatorBehaviour
-	
+	ID string
+
 	//Config
 	DoorOpenDuration int	
 }
@@ -79,11 +80,12 @@ func Elevator_print(es Elevator){
 }
 
 
-func Elevator_uninitialized(es *Elevator){  //initialize elevator, passing pointer
+func Elevator_uninitialized(es *Elevator, elevID string){  //initialize elevator, passing pointer
 	es.Floor = 1  //OBS! endret denne til 1 istedenfor -1 pga. index feil. Kan virke som dette funker siden man poller floor uansett og det vil bli endret til riktig
 	es.Dirn = elevio.MD_Stop
 	es.Behaviour = EB_Idle
 	es.DoorOpenDuration = 3
+	es.ID = elevID
 }
 
 

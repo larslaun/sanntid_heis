@@ -147,14 +147,14 @@ func onDoorTimeout(elev *elevator.Elevator) {
 }
 
 
-func Elev_init(elev *elevator.Elevator) {
-	elevator.Elevator_uninitialized(elev)
+func Elev_init(elev *elevator.Elevator, elevID string) {
+	elevator.Elevator_uninitialized(elev, elevID)
 	//if elevio.GetFloor() == -1 {
 		Fsm_onInitBetweenFloors(elev)
 	//}
 	setAllLights(*elev)
 	for floor := 0; floor < elevator.N_FLOORS; floor++ {
-		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++ { //Tror dette er fikset, ønsker vi +1?
+		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++ { 
 			elevio.SetButtonLamp(btn, floor, false)
 		}
 	}
