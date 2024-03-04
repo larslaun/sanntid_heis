@@ -53,6 +53,9 @@ func Eb_toString(eb ElevatorBehaviour) string{
 
 
 func Elevator_print(es Elevator){
+	fmt.Print("\nElevator ID: ")
+	fmt.Print(es.ID)
+	fmt.Print("\n")
 	fmt.Print("  +--------------------+\n")
 	fmt.Printf("  |floor = %-2d|\n", es.Floor)
     fmt.Printf("  |dirn  = %-12.12s|\n", Elevio_dirn_toString(es.Dirn))

@@ -18,7 +18,9 @@ func Fsm_onInitBetweenFloors(elev *elevator.Elevator) {
 
 func Fsm_server(buttons chan elevio.ButtonEvent, floors chan int, obstr chan bool, stop chan bool, elev *elevator.Elevator) {
 	
+	for{
 
+		//elevator.Elevator_print(*elev)
 		select {
 		case a := <-buttons:
 			fmt.Printf("%+v\n", a)
@@ -38,6 +40,7 @@ func Fsm_server(buttons chan elevio.ButtonEvent, floors chan int, obstr chan boo
 			//ikke var definert noen oppførsel. kan velge selv?
 
 		}
+	}
 	
 }
 
