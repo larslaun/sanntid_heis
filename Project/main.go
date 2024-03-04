@@ -2,6 +2,7 @@ package main
 
 import (
 	"Elev-project/collector"
+	"Elev-project/distributor"
 	"Elev-project/driver-go-master/elevator"
 	
 	"Elev-project/Network-go-master/network/bcast"
@@ -15,7 +16,8 @@ import (
 	"fmt"
 	"os"
 	//"os/exec"
-	"time"
+	//"time"
+	
 	
 )
 
@@ -25,6 +27,8 @@ func main() {
 	
 	// Our id can be anything. Here we pass it on the command line, using
 	//  `go run main.go -id=our_id`
+	var port string
+	flag.StringVar(&port, "port", "", "port of elev")
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer")
 	flag.Parse()
@@ -60,15 +64,14 @@ func main() {
 
 
 	var elev elevator.Elevator
-
 	//This is were process pairs were
-
 	numFloors := 4
-	elevio.Init("localhost:15657", numFloors)
+	elevio.Init("localhost:"+port, numFloors)
 	fsm.Elev_init(&elev, id)
-	
-
 	elevators := collector.ElevatorsInit(3)
+
+
+
 	go collector.CollectStates(elevStateRx, &elevators)
 	
 
@@ -85,73 +88,21 @@ func main() {
 
 	go fsm.Fsm_server(drv_buttons, drv_floors, drv_obstr, drv_stop, &elev)
 
-	// The example message. We just send one of these every second.
-
-	go func() {
-
-		for {
-			//helloMsg.Iter++
-			elevStateTx <- elev
-			time.Sleep(500 * time.Millisecond)
-		}
-	}()
-
-	go func(){
-		for{
-			select{
-			//case a := <-elevStateRx:
-				//fmt.Print("\nIn main! \n")
-				//elevator.Elevator_print(a)
-			}
-		}
-	}()
-	
-
-
-		//fsm.Fsm_server(drv_buttons, drv_floors, drv_obstr, drv_stop, &elev)
-		
-		fmt.Print("\n\nElev print main:\n")
-		elevator.Elevator_print(elev)
-		fmt.Print("\n\n")
-		
+	//Function for broadcasting local state
+	go distributor.DistributeState(elevStateTx, &elev)
 
 		
-		//i := cost_function.TimeToIdle(elev)
-		//fmt.Printf("\nTime to idle: %d\n", i)
+	//i := cost_function.TimeToIdle(elev)
+	//fmt.Printf("\nTime to idle: %d\n", i)
 
-		select {
-		/*
-		case a := <-drv_buttons:
-			fmt.Printf("%+v\n", a)
-			fsm.Fsm_onRequestButtonPress(a, &elev)
 
-		case a := <-drv_floors:
-			fmt.Printf("%+v\n", a)
-			fsm.Fsm_onFloorArrival(a, &elev)
-
-		case a := <-drv_obstr:
-			fmt.Printf("%+v\n", a)
-			//lag ny funksjon her eller finnes det allerede?
-
-		case a := <-drv_stop:
-			fmt.Printf("%+v\n", a)
-			//lag ny funksjon her eller finnes det allerede? tror det sto noe om at det
-			//ikke var definert noen oppførsel. kan velge selv?
-
-		case p := <-peerUpdateCh:
-			fmt.Printf("Peer update:\n")
-			fmt.Printf("  Peers:    %q\n", p.Peers)
-			fmt.Printf("  New:      %q\n", p.New)
-			fmt.Printf("  Lost:     %q\n", p.Lost)
-		
-
-		
-		case a := <-elevStateRx:
-		
-			fmt.Print("\n\nElev msg recieved:\n")
-			elevator.Elevator_print(a)
-			fmt.Print("\n\n")
-		*/
-		}
-
+	select {
+	/*
+	case p := <-peerUpdateCh:
+		fmt.Printf("Peer update:\n")
+		fmt.Printf("  Peers:    %q\n", p.Peers)
+		fmt.Printf("  New:      %q\n", p.New)
+		fmt.Printf("  Lost:     %q\n", p.Lost)
+		*/	
+	}		
 }

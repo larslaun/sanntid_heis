@@ -6,6 +6,7 @@ import (
 	"Elev-project/driver-go-master/requests"
 	"fmt"
 	"time"
+	"Elev-project/collector"
 )
 
 const TimerDuration = time.Duration(3) * time.Second
@@ -16,15 +17,19 @@ func Fsm_onInitBetweenFloors(elev *elevator.Elevator) {
 	elev.Behaviour = elevator.EB_Moving
 }
 
-func Fsm_server(buttons chan elevio.ButtonEvent, floors chan int, obstr chan bool, stop chan bool, elev *elevator.Elevator) {
+func Fsm_server(elevOrderRx chan collector.ElevatorOrder, buttons chan elevio.ButtonEvent, floors chan int, obstr chan bool, stop chan bool, elev *elevator.Elevator) {
 	
 	for{
 
 		//elevator.Elevator_print(*elev)
 		select {
-		case a := <-buttons:
-			fmt.Printf("%+v\n", a)
-			Fsm_onRequestButtonPress(a, elev)
+		
+		case a := <- elevOrderRx: //mulig måte å gjøre på?? trenger muligens ikke collect order da?
+		//case a := <-buttons:
+			if a.RecipientID==elev.ID{
+				fmt.Printf("%+v\n", a.order)
+				Fsm_onRequestButtonPress(a.order, elev)
+			}
 
 		case a := <-floors:
 			fmt.Printf("%+v\n", a)
