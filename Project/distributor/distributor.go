@@ -8,13 +8,13 @@ import (
 	"time"
 )
 
-
-func DistributeState(elevStateTx chan elevator.Elevator , localElev *elevator.Elevator){
+func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Elevator) {
 	for {
 		elevStateTx <- *localElev
 		time.Sleep(1000 * time.Millisecond)
 	}
 }
+
 
 
 
@@ -29,7 +29,7 @@ func DistributeOrder(buttonPress chan elevio.ButtonEvent,  elevOrderTx chan coll
 		case a:=<-buttonPress:
 			elevOrder := chooseOptimalElev(buttonPress, elevators) //choose optimalelev must calculat cost func for all elevs and create order to optimal elevator
 			elevOrderTx<-elevOrder
-		
+
 		}
 	}
 }
