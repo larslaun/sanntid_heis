@@ -6,14 +6,13 @@ import (
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
 	"Elev-project/settings"
-	"fmt"
 	"strconv"
 	//"fmt"
 )
 
 
 
-func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevators [settings.NumElevs]elevator.Elevator) collector.ElevatorOrder{
+func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevators *[settings.NumElevs]elevator.Elevator) collector.ElevatorOrder{
 	
 	var optimalElevID string
 	var lowestCost = 1000000
@@ -24,7 +23,7 @@ func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevators [settings.NumEl
 	for i := 0; i < settings.NumElevs; i++ {
 		if elevators[i].Available {
 			currCost = cost_function.TimeToIdle(elevators[i])
-			fmt.Printf("Cost for elevator ID %d is the following: %d\n", i, currCost)
+			//fmt.Printf("Cost for elevator ID %d is the following: %d\n", i, currCost)
 			if currCost < lowestCost{
 				optimalElevID = strconv.Itoa(i)
 				lowestCost = currCost

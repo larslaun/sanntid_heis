@@ -91,7 +91,7 @@ func Elevator_uninitialized(es *Elevator, elevID string){  //initialize elevator
 	es.Behaviour = EB_Idle
 	es.DoorOpenDuration = 3
 	es.ID = elevID
-	es.Available = true
+	es.Available = false
 }
 
 
