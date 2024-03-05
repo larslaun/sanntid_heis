@@ -4,8 +4,6 @@ import (
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
 	"Elev-project/driver-go-master/requests"
-	"fmt"
-	"time"
 )
 
 const doorOpenTime = 3
@@ -17,6 +15,8 @@ const N_BUTTONS int = 3
 func TimeToIdle(elevSim elevator.Elevator) int {
 
 	var Duration int = 0
+
+	ClearForSafety(&elevSim, &Duration)
 
 	switch elevSim.Behaviour {
 	case elevator.EB_Idle:
@@ -31,10 +31,7 @@ func TimeToIdle(elevSim elevator.Elevator) int {
 		Duration += doorOpenTime
 
 	}
-	i:=0
 	for {
-		fmt.Printf("%d\n" , i)
-		elevator.Elevator_print(elevSim)
 		if requests.Requests_shouldStop(elevSim) {
 			
 			elevSim = requests.RequestsClearAtCurrentFloor(elevSim)
@@ -44,8 +41,8 @@ func TimeToIdle(elevSim elevator.Elevator) int {
 				return Duration
 			}
 		}
-		i++
-		time.Sleep(500 * time.Millisecond)
+		elevSim.Floor += int(elevSim.Dirn)
+		Duration += travelTime
 	}
 }
 
@@ -61,4 +58,13 @@ func CostClearAtCurrentFloor(elevOld elevator.Elevator) elevator.Elevator {
 	return elev
 }
 
-
+func ClearForSafety(e *elevator.Elevator, cost *int){
+	for floor := 0; floor < elevator.N_FLOORS; floor++ {
+		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++{
+			if requests.RequestsShouldClearImmediately(*e, floor, btn){
+				e.Requests[floor][btn] = false
+				*cost += doorOpenTime
+			}
+		}
+	}
+}
