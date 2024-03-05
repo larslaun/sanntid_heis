@@ -1,11 +1,12 @@
 package hallAssigner
 
-import(
+import (
+	"Elev-project/collector"
 	"Elev-project/driver-go-master/cost_function"
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
 	"Elev-project/settings"
-	"Elev-project/collector"
+	"fmt"
 	"strconv"
 	//"fmt"
 )
@@ -23,6 +24,7 @@ func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevators [settings.NumEl
 	for i := 0; i < settings.NumElevs; i++ {
 		if elevators[i].Available {
 			currCost = cost_function.TimeToIdle(elevators[i])
+			fmt.Printf("Cost for elevator ID %d is the following: %d\n", i, currCost)
 			if currCost < lowestCost{
 				optimalElevID = strconv.Itoa(i)
 				lowestCost = currCost

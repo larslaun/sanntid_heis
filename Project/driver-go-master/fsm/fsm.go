@@ -87,7 +87,7 @@ func Fsm_onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevato
 		}
 	}
 	setAllLights(*elev)
-	print("\nNew state:\n")
+	//print("\nNew state:\n")
 	//elevator.Elevator_print(*elev)
 }
 
@@ -113,7 +113,7 @@ func Fsm_onFloorArrival(newFloor int, elev *elevator.Elevator) {
 
 		}
 	}
-	print("\nNew state:\n")
+	//print("\nNew state:\n")
 	//elevator.Elevator_print(*elev)
 
 }
@@ -151,7 +151,7 @@ func onDoorTimeout(elev *elevator.Elevator) {
 		}
 
 	}
-	print("\nNew state:\n")
+	//print("\nNew state:\n")
 	//elevator.Elevator_print(*elev)
 
 }
