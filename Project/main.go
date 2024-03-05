@@ -78,7 +78,7 @@ func main() {
 	
 	go collector.CollectStates(elevStateRx, &elevators)
 	go distributor.DistributeState(elevStateTx, &elev)
-	go distributor.DistributeOrder(drv_buttons, elevOrderTx, &elevators)
+	go distributor.DistributeOrder(drv_buttons, elevOrderTx, elevators)
 
 
 	go fsm.Fsm_server(elevOrderRx, drv_floors, drv_obstr, drv_stop, &elev)

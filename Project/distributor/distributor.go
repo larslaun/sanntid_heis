@@ -1,10 +1,11 @@
 package distributor
 
 import (
-	//"Elev-project/collector"
+	"Elev-project/collector"
+	"Elev-project/hallAssigner"
 	"Elev-project/driver-go-master/elevator"
-	//"Elev-project/driver-go-master/elevio"
-	//"Elev-project/settings"
+	"Elev-project/driver-go-master/elevio"
+	"Elev-project/settings"
 	"time"
 )
 
@@ -22,15 +23,13 @@ func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Ele
 //psuedo distributor
 //Recieves buttonpress, then calculates optimal elevator wiht cost func,then sends elevOrder which includes order and ID of elev.
 
-/*
-func DistributeOrder(buttonPress chan elevio.ButtonEvent,  elevOrderTx chan collector.ElevatorOrder,  elevators *[settings.NumElevs]elevator.Elevator){
+
+func DistributeOrder(buttonPress chan elevio.ButtonEvent,  elevOrderTx chan collector.ElevatorOrder,  elevators [settings.NumElevs]elevator.Elevator){
 	for{
 		select{
-		case a:=<-buttonPress:
-			elevOrder := chooseOptimalElev(buttonPress, elevators) //choose optimalelev must calculat cost func for all elevs and create order to optimal elevator
+		case buttonPress:=<-buttonPress:
+			elevOrder := hallAssigner.ChooseOptimalElev(buttonPress, elevators) //choose optimalelev must calculat cost func for all elevs and create order to optimal elevator
 			elevOrderTx<-elevOrder
-
 		}
 	}
 }
-*/
