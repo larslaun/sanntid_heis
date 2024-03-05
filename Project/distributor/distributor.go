@@ -15,6 +15,10 @@ func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Ele
 	}
 }
 
+
+
+
+
 //psuedo distributor
 //Recieves buttonpress, then calculates optimal elevator wiht cost func,then sends elevOrder which includes order and ID of elev.
 
