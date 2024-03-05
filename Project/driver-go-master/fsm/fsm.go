@@ -17,7 +17,7 @@ func Fsm_onInitBetweenFloors(elev *elevator.Elevator) {
 	elev.Behaviour = elevator.EB_Moving
 }
 
-func Fsm_server(elevOrderRx chan collector.ElevatorOrder, buttons chan elevio.ButtonEvent, floors chan int, obstr chan bool, stop chan bool, elev *elevator.Elevator) {
+func Fsm_server(elevOrderRx chan collector.ElevatorOrder, floors chan int, obstr chan bool, stop chan bool, elev *elevator.Elevator) {
 	
 	for{
 
@@ -27,8 +27,9 @@ func Fsm_server(elevOrderRx chan collector.ElevatorOrder, buttons chan elevio.Bu
 		case a := <- elevOrderRx: //mulig måte å gjøre på?? trenger muligens ikke collect order da?
 		//case a := <-buttons:
 			if a.RecipientID==elev.ID{
-				fmt.Printf("%+v\n", a.order)
-				Fsm_onRequestButtonPress(a.order, elev)
+				fmt.Print("Recieved new order: ")
+				fmt.Printf("%+v\n", a.Order)
+				Fsm_onRequestButtonPress(a.Order, elev)
 			}
 
 		case a := <-floors:

@@ -6,22 +6,23 @@ import (
 	"fmt"
 	//"Elev-project/driver-go-master/fsm"
 	"strconv"
+	"Elev-project/settings"
 )
 
 
 
 type ElevatorOrder struct{
 	RecipientID string
-	order elevio.ButtonEvent
+	Order elevio.ButtonEvent
 }
 
 
 
 
-func ElevatorsInit(numElevs int) [3]elevator.Elevator{
-	var elevators = [3]elevator.Elevator{}
+func ElevatorsInit() [settings.NumElevs]elevator.Elevator{
+	var elevators = [settings.NumElevs]elevator.Elevator{}
 
-	for i := 0; i < numElevs; i++ {
+	for i := 0; i < settings.NumElevs; i++ {
 		elevator.Elevator_uninitialized(&elevators[i], strconv.Itoa(i))
 		elevator.Elevator_print(elevators[i])
 	}
@@ -31,7 +32,7 @@ func ElevatorsInit(numElevs int) [3]elevator.Elevator{
 
 //Function for collecting states of different elevators. 
 //Should change so length of array is not hardcoded. Global var??
-func CollectStates(elevStateRx chan elevator.Elevator, elevators *[3]elevator.Elevator){
+func CollectStates(elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator){
 	for{
 		select {
 		case newState := <-elevStateRx:
@@ -48,7 +49,10 @@ func CollectStates(elevStateRx chan elevator.Elevator, elevators *[3]elevator.El
 //Function for collecting orders broadcasted
 //Orders are stored to reciever elevators state.
 //Should only recipient store order??
-func CollectOrders(elevOrderRx chan ElevatorOrder, elevators *[3]elevator.Elevator){
+
+//Maybe scrap this function and handle in fsm instead, then we can use already made Fsm_onRequestButtonPress function
+/*
+func CollectOrders(elevOrderRx chan ElevatorOrder, elevators *[settings.NumElevs]elevator.Elevator){
 	for{
 		select{
 		case newOrder := <-elevOrderRx:
@@ -59,3 +63,4 @@ func CollectOrders(elevOrderRx chan ElevatorOrder, elevators *[3]elevator.Elevat
 	}
 
 }
+*/

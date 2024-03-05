@@ -24,7 +24,7 @@ func main() {
 	// Our id can be anything. Here we pass it on the command line, using
 	//  `go run main.go -id=our_id`
 	var elevPort string
-	flag.StringVar(&port, "port", "", "port of elev")
+	flag.StringVar(&elevPort, "port", "", "port of elev")
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer")
 	flag.Parse()
@@ -62,10 +62,9 @@ func main() {
 	numFloors := 4
 	elevio.Init("localhost:"+elevPort, numFloors)
 	fsm.Elev_init(&elev, id)
-	elevators := collector.ElevatorsInit(3)
+	elevators := collector.ElevatorsInit()
 
-	go collector.CollectStates(elevStateRx, &elevators)
-
+	
 	drv_buttons := make(chan elevio.ButtonEvent)
 	drv_floors := make(chan int)
 	drv_obstr := make(chan bool)
@@ -76,11 +75,18 @@ func main() {
 	go elevio.PollObstructionSwitch(drv_obstr)
 	go elevio.PollStopButton(drv_stop)
 
-	go fsm.Fsm_server(drv_buttons, drv_floors, drv_obstr, drv_stop, &elev)
-
-	//Function for broadcasting local state
+	
+	go collector.CollectStates(elevStateRx, &elevators)
 	go distributor.DistributeState(elevStateTx, &elev)
+	go distributor.DistributeOrder(drv_buttons, elevOrderTx, &elevators)
 
+
+	go fsm.Fsm_server(elevOrderRx, drv_floors, drv_obstr, drv_stop, &elev)
+
+
+
+	
+	
 	//i := cost_function.TimeToIdle(elev)
 	//fmt.Printf("\nTime to idle: %d\n", i)
 
