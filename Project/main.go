@@ -4,7 +4,7 @@ import (
 	"Elev-project/collector"
 	"Elev-project/distributor"
 	"Elev-project/driver-go-master/elevator"
-	
+
 	"Elev-project/Network-go-master/network/bcast"
 	"Elev-project/Network-go-master/network/localip"
 	"Elev-project/Network-go-master/network/peers"
@@ -17,17 +17,13 @@ import (
 	"os"
 	//"os/exec"
 	//"time"
-	
-	
 )
 
-
-
 func main() {
-	
+
 	// Our id can be anything. Here we pass it on the command line, using
 	//  `go run main.go -id=our_id`
-	var port string
+	var elevPort string
 	flag.StringVar(&port, "port", "", "port of elev")
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer")
@@ -45,36 +41,30 @@ func main() {
 		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
 	}
 
-	
 	peerUpdateCh := make(chan peers.PeerUpdate)
 	peerTxEnable := make(chan bool)
 	go peers.Transmitter(15647, id, peerTxEnable)
 	go peers.Receiver(15647, peerUpdateCh)
-   
-	
 
 	elevStateTx := make(chan elevator.Elevator)
 	elevStateRx := make(chan elevator.Elevator)
 	go bcast.Transmitter(20008, elevStateTx)
 	go bcast.Receiver(20008, elevStateRx)
 
-	//Legg inn elevOrder channel?
-	//elevOrderTx := make(chan )
-
-
+	//Må finne ut at av hvilke porter som kan brukes
+	elevOrderTx := make(chan collector.ElevatorOrder)
+	elevOrderRx := make(chan collector.ElevatorOrder)
+	go bcast.Transmitter(21008, elevStateTx)
+	go bcast.Receiver(21008, elevStateRx)
 
 	var elev elevator.Elevator
 	//This is were process pairs were
 	numFloors := 4
-	elevio.Init("localhost:"+port, numFloors)
+	elevio.Init("localhost:"+elevPort, numFloors)
 	fsm.Elev_init(&elev, id)
 	elevators := collector.ElevatorsInit(3)
 
-
-
 	go collector.CollectStates(elevStateRx, &elevators)
-	
-
 
 	drv_buttons := make(chan elevio.ButtonEvent)
 	drv_floors := make(chan int)
@@ -91,18 +81,16 @@ func main() {
 	//Function for broadcasting local state
 	go distributor.DistributeState(elevStateTx, &elev)
 
-		
 	//i := cost_function.TimeToIdle(elev)
 	//fmt.Printf("\nTime to idle: %d\n", i)
 
-
 	select {
 	/*
-	case p := <-peerUpdateCh:
-		fmt.Printf("Peer update:\n")
-		fmt.Printf("  Peers:    %q\n", p.Peers)
-		fmt.Printf("  New:      %q\n", p.New)
-		fmt.Printf("  Lost:     %q\n", p.Lost)
-		*/	
-	}		
+		case p := <-peerUpdateCh:
+			fmt.Printf("Peer update:\n")
+			fmt.Printf("  Peers:    %q\n", p.Peers)
+			fmt.Printf("  New:      %q\n", p.New)
+			fmt.Printf("  Lost:     %q\n", p.Lost)
+	*/
+	}
 }
