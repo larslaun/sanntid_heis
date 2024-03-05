@@ -69,7 +69,7 @@ func CostClearAtCurrentFloor(elevOld elevator.Elevator) elevator.Elevator {
 func ClearForSafety(e *elevator.Elevator, cost *int){
 	for floor := 0; floor < elevator.N_FLOORS; floor++ {
 		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++{
-			if requests.RequestsShouldClearImmediately(*e, floor, btn){
+			if requests.RequestsShouldClearImmediately(*e, floor, btn) && (e.Requests[floor][btn]){
 				e.Requests[floor][btn] = false
 				*cost += DOOROPENTIME
 			}
