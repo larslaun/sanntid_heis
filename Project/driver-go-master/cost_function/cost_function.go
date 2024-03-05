@@ -4,7 +4,7 @@ import (
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
 	"Elev-project/driver-go-master/requests"
-	
+	"fmt"
 )
 
 const doorOpenTime = 3
@@ -18,11 +18,14 @@ func TimeToIdle(elevSim elevator.Elevator) int {
 	var Duration int = 0
 
 	ClearForSafety(&elevSim, &Duration)
+	
+	
 
 	switch elevSim.Behaviour {
 	case elevator.EB_Idle:
 		elevSim.Dirn = requests.RequestsChooseDirection(elevSim).Dirn
 		if elevSim.Dirn == elevio.MD_Stop {
+			fmt.Printf("\nElevator ID " + elevSim.ID + " calculated duration: %d\n", Duration)
 			return Duration
 		}
 	case elevator.EB_Moving:
@@ -39,6 +42,7 @@ func TimeToIdle(elevSim elevator.Elevator) int {
 			Duration += doorOpenTime
 			elevSim.Dirn = requests.RequestsChooseDirection(elevSim).Dirn
 			if elevSim.Dirn == elevio.MD_Stop {
+				fmt.Printf("\nElevator ID " + elevSim.ID + " calculated duration: %d\n", Duration)
 				return Duration
 			}
 		}

@@ -63,6 +63,9 @@ func main() {
 	elevio.Init("localhost:"+elevPort, numFloors)
 	fsm.Elev_init(&elev, id)
 	elevators := collector.ElevatorsInit()
+	for i := 0; i <3; i++ {
+		elevator.Elevator_print(elevators[i])
+	}
 
 	
 	drv_buttons := make(chan elevio.ButtonEvent)
@@ -78,7 +81,7 @@ func main() {
 	
 	go collector.CollectStates(elevStateRx, &elevators)
 	go distributor.DistributeState(elevStateTx, &elev)
-	go distributor.DistributeOrder(drv_buttons, elevOrderTx, elevators)
+	go distributor.DistributeOrder(drv_buttons, elevOrderTx, &elevators)
 
 
 	go fsm.Fsm_server(elevOrderRx, drv_floors, drv_obstr, drv_stop, &elev)
