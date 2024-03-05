@@ -21,10 +21,11 @@ const (
 type Elevator struct{
 	Floor int
 	Dirn elevio.MotorDirection
-	Requests[N_FLOORS][N_BUTTONS] bool //OBS!! endret denne fra int til bool. ok?
+	Requests[N_FLOORS][N_BUTTONS] bool 
 	Behaviour ElevatorBehaviour
 	ID string
 	Available bool 
+
 
 	//Config
 	DoorOpenDuration int	
