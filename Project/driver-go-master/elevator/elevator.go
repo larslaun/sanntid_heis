@@ -24,6 +24,7 @@ type Elevator struct{
 	Requests[N_FLOORS][N_BUTTONS] bool //OBS!! endret denne fra int til bool. ok?
 	Behaviour ElevatorBehaviour
 	ID string
+	Available bool 
 
 	//Config
 	DoorOpenDuration int	

@@ -29,8 +29,8 @@ func DistributeOrder(buttonPress chan elevio.ButtonEvent,  elevOrderTx chan coll
 		case a:=<-buttonPress:
 			elevOrder := chooseOptimalElev(buttonPress, elevators) //choose optimalelev must calculat cost func for all elevs and create order to optimal elevator
 			elevOrderTx<-elevOrder
-		
 		}
 	}
 }
 */
+

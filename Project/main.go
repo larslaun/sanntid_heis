@@ -50,7 +50,7 @@ func main() {
 	elevStateRx := make(chan elevator.Elevator)
 	go bcast.Transmitter(20008, elevStateTx)
 	go bcast.Receiver(20008, elevStateRx)
-
+	
 	//Må finne ut at av hvilke porter som kan brukes
 	elevOrderTx := make(chan collector.ElevatorOrder)
 	elevOrderRx := make(chan collector.ElevatorOrder)
