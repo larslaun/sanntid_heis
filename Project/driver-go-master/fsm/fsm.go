@@ -6,6 +6,7 @@ import (
 	"Elev-project/driver-go-master/requests"
 	"fmt"
 	"time"
+	"Elev-project/collector"
 )
 
 const TimerDuration = time.Duration(3) * time.Second
@@ -16,13 +17,20 @@ func Fsm_onInitBetweenFloors(elev *elevator.Elevator) {
 	elev.Behaviour = elevator.EB_Moving
 }
 
-func Fsm_server(buttons chan elevio.ButtonEvent, floors chan int, obstr chan bool, stop chan bool, elev *elevator.Elevator) {
+func Fsm_server(elevOrderRx chan collector.ElevatorOrder, floors chan int, obstr chan bool, stop chan bool, elev *elevator.Elevator) {
 	
+	for{
 
+		//elevator.Elevator_print(*elev)
 		select {
-		case a := <-buttons:
-			fmt.Printf("%+v\n", a)
-			Fsm_onRequestButtonPress(a, elev)
+		
+		case a := <- elevOrderRx: //mulig måte å gjøre på?? trenger muligens ikke collect order da?
+		//case a := <-buttons:
+			if a.RecipientID==elev.ID{
+				fmt.Print("Recieved new order: ")
+				fmt.Printf("%+v\n", a.Order)
+				Fsm_onRequestButtonPress(a.Order, elev)
+			}
 
 		case a := <-floors:
 			fmt.Printf("%+v\n", a)
@@ -38,6 +46,7 @@ func Fsm_server(buttons chan elevio.ButtonEvent, floors chan int, obstr chan boo
 			//ikke var definert noen oppførsel. kan velge selv?
 
 		}
+	}
 	
 }
 
@@ -147,14 +156,14 @@ func onDoorTimeout(elev *elevator.Elevator) {
 }
 
 
-func Elev_init(elev *elevator.Elevator) {
-	elevator.Elevator_uninitialized(elev)
+func Elev_init(elev *elevator.Elevator, elevID string) {
+	elevator.Elevator_uninitialized(elev, elevID)
 	//if elevio.GetFloor() == -1 {
 		Fsm_onInitBetweenFloors(elev)
 	//}
 	setAllLights(*elev)
 	for floor := 0; floor < elevator.N_FLOORS; floor++ {
-		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++ { //Tror dette er fikset, ønsker vi +1?
+		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++ { 
 			elevio.SetButtonLamp(btn, floor, false)
 		}
 	}

@@ -1,26 +1,30 @@
 package main
 
 import (
+	"Elev-project/collector"
+	"Elev-project/distributor"
+	"Elev-project/driver-go-master/elevator"
+
 	"Elev-project/Network-go-master/network/bcast"
 	"Elev-project/Network-go-master/network/localip"
 	"Elev-project/Network-go-master/network/peers"
-	"Elev-project/driver-go-master/elevator"
+	//"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
 	"Elev-project/driver-go-master/fsm"
-	"Elev-project/driver-go-master/cost_function"
+	//"Elev-project/driver-go-master/cost_function"
 	"flag"
 	"fmt"
 	"os"
-	"os/exec"
-	"time"
+	//"os/exec"
+	//"time"
 )
-
-
 
 func main() {
 
 	// Our id can be anything. Here we pass it on the command line, using
 	//  `go run main.go -id=our_id`
+	var elevPort string
+	flag.StringVar(&elevPort, "port", "", "port of elev")
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer")
 	flag.Parse()
@@ -37,56 +41,30 @@ func main() {
 		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
 	}
 
-	// We make a channel for receiving updates on the id's of the peers that are
-	//  alive on the network
 	peerUpdateCh := make(chan peers.PeerUpdate)
-	// We can disable/enable the transmitter after it has been started.
-	// This could be used to signal that we are somehow "unavailable".
 	peerTxEnable := make(chan bool)
 	go peers.Transmitter(15647, id, peerTxEnable)
 	go peers.Receiver(15647, peerUpdateCh)
 
-	// We make channels for sending and receiving our custom data types
 	elevStateTx := make(chan elevator.Elevator)
 	elevStateRx := make(chan elevator.Elevator)
-	// ... and start the transmitter/receiver pair on some port
-	// These functions can take any number of channels! It is also possible to
-	//  start multiple transmitters/receivers on the same port.
 	go bcast.Transmitter(20008, elevStateTx)
 	go bcast.Receiver(20008, elevStateRx)
 
+	//Må finne ut at av hvilke porter som kan brukes
+	elevOrderTx := make(chan collector.ElevatorOrder)
+	elevOrderRx := make(chan collector.ElevatorOrder)
+	go bcast.Transmitter(21008, elevStateTx)
+	go bcast.Receiver(21008, elevStateRx)
+
 	var elev elevator.Elevator
-
-	//Processing pairs
-	print("This is slave\n")
-	timer1 := time.NewTimer(2 * time.Second)
-	
-	backupLoop:
-		for {
-			select {
-			case elev = <-elevStateRx:
-				fmt.Print("\n\nElev msg recieved:\n")
-				elevator.Elevator_print(elev)
-				fmt.Print("\n\n")
-				timer1.Reset(2 * time.Second)
-			case <-timer1.C:
-				break backupLoop
-			}
-		}
-	fmt.Print("Spawning backup\n")
-	exec.Command("gnome-terminal", "--", "go", "run", "main.go").Run()
-	print("This is now master\n")
-
-
-
+	//This is were process pairs were
 	numFloors := 4
-	elevio.Init("localhost:15657", numFloors)
-	fsm.Elev_init(&elev)
-	
+	elevio.Init("localhost:"+elevPort, numFloors)
+	fsm.Elev_init(&elev, id)
+	elevators := collector.ElevatorsInit()
 
 	
-
-
 	drv_buttons := make(chan elevio.ButtonEvent)
 	drv_floors := make(chan int)
 	drv_obstr := make(chan bool)
@@ -97,64 +75,28 @@ func main() {
 	go elevio.PollObstructionSwitch(drv_obstr)
 	go elevio.PollStopButton(drv_stop)
 
-	// The example message. We just send one of these every second.
+	
+	go collector.CollectStates(elevStateRx, &elevators)
+	go distributor.DistributeState(elevStateTx, &elev)
+	go distributor.DistributeOrder(drv_buttons, elevOrderTx, &elevators)
 
-	go func() {
 
-		for {
-			//helloMsg.Iter++
-			elevStateTx <- elev
-			time.Sleep(500 * time.Millisecond)
-		}
-	}()
+	go fsm.Fsm_server(elevOrderRx, drv_floors, drv_obstr, drv_stop, &elev)
+
+
 
 	
+	
+	//i := cost_function.TimeToIdle(elev)
+	//fmt.Printf("\nTime to idle: %d\n", i)
 
-	for {
-		//fsm.Fsm_server(drv_buttons, drv_floors, drv_obstr, drv_stop, &elev)
-		
-		fmt.Print("\n\nElev print main:\n")
-		elevator.Elevator_print(elev)
-		fmt.Print("\n\n")
-		
-
-		
-		i := cost_function.TimeToIdle(elev)
-		fmt.Printf("\nTime to idle: %d\n", i)
-
-		select {
-
-		case a := <-drv_buttons:
-			fmt.Printf("%+v\n", a)
-			fsm.Fsm_onRequestButtonPress(a, &elev)
-
-		case a := <-drv_floors:
-			fmt.Printf("%+v\n", a)
-			fsm.Fsm_onFloorArrival(a, &elev)
-
-		case a := <-drv_obstr:
-			fmt.Printf("%+v\n", a)
-			//lag ny funksjon her eller finnes det allerede?
-
-		case a := <-drv_stop:
-			fmt.Printf("%+v\n", a)
-			//lag ny funksjon her eller finnes det allerede? tror det sto noe om at det
-			//ikke var definert noen oppførsel. kan velge selv?
-
+	select {
+	/*
 		case p := <-peerUpdateCh:
 			fmt.Printf("Peer update:\n")
 			fmt.Printf("  Peers:    %q\n", p.Peers)
 			fmt.Printf("  New:      %q\n", p.New)
 			fmt.Printf("  Lost:     %q\n", p.Lost)
-
-		case a := <-elevStateRx:
-		
-			fmt.Print("\n\nElev msg recieved:\n")
-			elevator.Elevator_print(a)
-			fmt.Print("\n\n")
-			
-		}
-
+	*/
 	}
-
 }
