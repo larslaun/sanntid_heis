@@ -54,8 +54,8 @@ func main() {
 	//Må finne ut at av hvilke porter som kan brukes
 	elevOrderTx := make(chan collector.ElevatorOrder)
 	elevOrderRx := make(chan collector.ElevatorOrder)
-	go bcast.Transmitter(21008, elevStateTx)
-	go bcast.Receiver(21008, elevStateRx)
+	go bcast.Transmitter(21008, elevOrderTx)
+	go bcast.Receiver(21008, elevOrderRx)
 
 	var elev elevator.Elevator
 	//This is were process pairs were

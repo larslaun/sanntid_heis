@@ -26,6 +26,7 @@ func Fsm_server(elevOrderRx chan collector.ElevatorOrder, floors chan int, obstr
 		
 		case a := <- elevOrderRx: //mulig måte å gjøre på?? trenger muligens ikke collect order da?
 		//case a := <-buttons:
+			
 			if a.RecipientID==elev.ID{
 				fmt.Print("Recieved new order: ")
 				fmt.Printf("%+v\n", a.Order)

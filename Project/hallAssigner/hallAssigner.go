@@ -7,7 +7,7 @@ import(
 	"Elev-project/settings"
 	"Elev-project/collector"
 	"strconv"
-	"fmt"
+	//"fmt"
 )
 
 
@@ -30,6 +30,6 @@ func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevators [settings.NumEl
 			}
 		} 
 	}
-	fmt.Printf("\n COST CALCULATED: %d\n", currCost)
+
 	return order
 }

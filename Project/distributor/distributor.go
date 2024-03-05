@@ -7,6 +7,7 @@ import (
 	"Elev-project/driver-go-master/elevio"
 	"Elev-project/settings"
 	"time"
+	"fmt"
 )
 
 func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Elevator) {
@@ -29,6 +30,11 @@ func DistributeOrder(buttonPress chan elevio.ButtonEvent,  elevOrderTx chan coll
 		select{
 		case buttonPress:=<-buttonPress:
 			elevOrder := hallAssigner.ChooseOptimalElev(buttonPress, elevators) //choose optimalelev must calculat cost func for all elevs and create order to optimal elevator
+			//fmt.Printf("\n COST CALCULATED: %d\n", currCost)
+			fmt.Printf("optimalElevID: " + elevOrder.RecipientID + "\n")
+			fmt.Printf("Floor: %d \n", elevOrder.Order.Floor)
+			fmt.Printf("Button: %d ", elevOrder.Order.Button)
+			
 			elevOrderTx<-elevOrder
 		}
 	}
