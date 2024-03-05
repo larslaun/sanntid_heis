@@ -3,7 +3,7 @@ package collector
 import (
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
-	"fmt"
+	//"fmt"
 	//"Elev-project/driver-go-master/fsm"
 	"strconv"
 	"Elev-project/settings"
@@ -36,10 +36,10 @@ func CollectStates(elevStateRx chan elevator.Elevator, elevators *[settings.NumE
 	for{
 		select {
 		case newState := <-elevStateRx:
-			fmt.Print("Recieved new state:")
 			elevID, _ := strconv.Atoi(newState.ID)
 			elevators[elevID] = newState
-			elevator.Elevator_print(elevators[elevID])
+			//fmt.Print("Recieved new state:")
+			//elevator.Elevator_print(elevators[elevID])
 		}
 	}
 }
