@@ -129,9 +129,10 @@ func Fsm_onFloorArrival(newFloor int, elev *elevator.Elevator) {
 
 }
 
+//OBS! Har byttet slik at bare CAB-lights skal lyse opp med denne funksjonen. (endret fra btn:= elevio.BT_HallUp, og fjernet +1 på btn < elevio.BT_Cab).
 func setAllLights(elev elevator.Elevator) {
 	for floor := 0; floor < elevator.N_FLOORS; floor++ {
-		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++ { //Tror dette er fikset, ønsker vi +1?
+		for btn := elevio.BT_Cab; btn < elevio.BT_Cab; btn++ { //Tror dette er fikset, ønsker vi +1?
 			if elev.Requests[floor][btn] {
 				elevio.SetButtonLamp(btn, floor, true)
 			} else {
