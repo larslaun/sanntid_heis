@@ -19,12 +19,15 @@ func Fsm_onInitBetweenFloors(elev *elevator.Elevator) {
 	elev.Behaviour = elevator.EB_Moving
 }
 
-func Fsm_server(elevOrderRx chan collector.ElevatorOrder, elevOrderTx chan collector.ElevatorOrder, buttons chan elevio.ButtonEvent ,floors chan int, obstr chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
+func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.ElevatorOrder, elevOrderTx chan collector.ElevatorOrder, buttons chan elevio.ButtonEvent ,floors chan int, obstr chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
 	
 	for{
 
 		//elevator.Elevator_print(*elev)
 		select {
+
+		case <- elevStateRx:
+			SetHallLights(elevators)
 
 		case a := <- elevOrderRx: 
 			if a.RecipientID==elev.ID{
@@ -151,14 +154,14 @@ func SetHallLights(elevators *[settings.NumElevs]elevator.Elevator){
 	//går gjennom hvert Hall-element i hver heis sin matrise og OR'er med hvert element i hallMatrix
 	for id := 0; id < len(elevators); id++ {
 		for floor := 0; floor < elevator.N_FLOORS; floor++ {
-			for btn := elevio.BT_HallUp; btn < elevio.BT_HallDown; btn ++{
+			for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn ++{
 				hallMatrix[floor][btn] = hallMatrix[floor][btn] || elevators[id].Requests[floor][btn]
 			}
 		}
 	}
 
 	for floor := 0; floor < elevator.N_FLOORS; floor++ {
-		for btn := elevio.BT_HallUp; btn < elevio.BT_HallDown; btn++{
+		for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++{
 			if elev.Requests[floor][elevio.BT_Cab] {
 				elevio.SetButtonLamp(btn, floor, true)
 			} else {

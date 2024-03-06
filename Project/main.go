@@ -95,7 +95,7 @@ func main() {
 	go distributor.DistributeState(elevStateTx, &elev)
 	go distributor.RedistributeFaultyElevOrders(elevOrderTx, &elevators, &elev, redistributeSignal)
 
-	go fsm.Fsm_server(elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstr, drv_stop, &elev, &elevators)
+	go fsm.Fsm_server(elevStateRx, elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstr, drv_stop, &elev, &elevators)
 
 	//i := cost_function.TimeToIdle(elev)
 	//fmt.Printf("\nTime to idle: %d\n", i)
