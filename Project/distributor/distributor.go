@@ -31,17 +31,10 @@ func DistributeOrder(buttonPress elevio.ButtonEvent,  elevOrderTx chan collector
 		select{
 		case buttonPress:=<-buttonPress:
 
-<<<<<<< HEAD
-			//Problem her sannsynligvis. Får ikke tak i heis states
-			elevator.Elevator_print(elevators[1])
-		
-			elevOrder := hallAssigner.ChooseOptimalElev(buttonPress, elevators) //choose optimalelev must calculat cost func for all elevs and create order to optimal elevator
-=======
 			if buttonPress.Button != elevio.BT_Cab {*/
 				//Problem her sannsynligvis. Får ikke tak i heis states
 				//elevator.Elevator_print(elevators[0])
 
->>>>>>> 2ea464e6d2b2f4118d1e6c63a1735f2def87e42c
 			
 				elevOrder := hallAssigner.ChooseOptimalElev(buttonPress, elevators) //choose optimalelev must calculat cost func for all elevs and create order to optimal elevator
 				
