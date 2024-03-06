@@ -22,6 +22,8 @@ func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevators *[settings.NumE
 
 	for i := 0; i < settings.NumElevs; i++ {
 		if elevators[i].Available {
+			//fmt.Printf("Calculating cost for ID %d:", i)
+			//elevator.Elevator_print(elevators[i])
 			currCost = cost_function.TimeToIdle(elevators[i])
 			//fmt.Printf("Cost for elevator ID %d is the following: %d\n", i, currCost)
 			if currCost < lowestCost{
