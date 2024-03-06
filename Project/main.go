@@ -23,10 +23,11 @@ func main() {
 
 	// Our id can be anything. Here we pass it on the command line, using
 	//  `go run main.go -id=our_id`
-	var elevPort string
-	flag.StringVar(&elevPort, "port", "", "port of elev")
+	
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer")
+	var elevPort string
+	flag.StringVar(&elevPort, "port", "", "port of elev")
 	flag.Parse()
 
 	// ... or alternatively, we can use the local IP address.
@@ -39,6 +40,10 @@ func main() {
 			localIP = "DISCONNECTED"
 		}
 		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
+	}
+
+	if elevPort == "" {
+		elevPort = "15657"
 	}
 
 	peerUpdateCh := make(chan peers.PeerUpdate)

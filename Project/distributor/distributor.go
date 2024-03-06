@@ -48,7 +48,7 @@ func DistributeOrder(buttonPress chan elevio.ButtonEvent,  elevOrderTx chan coll
 		case buttonPress:=<-buttonPress:
 
 			//Problem her sannsynligvis. Får ikke tak i heis states
-			elevator.Elevator_print(elevators[0])
+			elevator.Elevator_print(elevators[1])
 		
 			elevOrder := hallAssigner.ChooseOptimalElev(buttonPress, elevators) //choose optimalelev must calculat cost func for all elevs and create order to optimal elevator
 			

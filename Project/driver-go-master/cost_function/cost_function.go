@@ -18,14 +18,14 @@ func TimeToIdle(elevSim elevator.Elevator) int {
 	var Duration int = 0
 
 	ClearForSafety(&elevSim, &Duration)
+	fmt.Printf("\ncost print 1: %d\n", Duration)
 	
-	
-
 	switch elevSim.Behaviour {
 	case elevator.EB_Idle:
 		elevSim.Dirn = requests.RequestsChooseDirection(elevSim).Dirn
 		if elevSim.Dirn == elevio.MD_Stop {
-			fmt.Printf("\nElevator ID " + elevSim.ID + " calculated duration: %d\n", Duration)
+			fmt.Printf("\nElevator ID " + elevSim.ID + " calculated duration1: %d\n", Duration)
+			elevator.Elevator_print(elevSim)
 			return Duration
 		}
 	case elevator.EB_Moving:
@@ -33,7 +33,6 @@ func TimeToIdle(elevSim elevator.Elevator) int {
 		elevSim.Floor += int(elevSim.Dirn)
 	case elevator.EB_DoorOpen:
 		Duration += doorOpenTime
-
 	}
 	for {
 		if requests.Requests_shouldStop(elevSim) {
@@ -42,12 +41,14 @@ func TimeToIdle(elevSim elevator.Elevator) int {
 			Duration += doorOpenTime
 			elevSim.Dirn = requests.RequestsChooseDirection(elevSim).Dirn
 			if elevSim.Dirn == elevio.MD_Stop {
-				fmt.Printf("\nElevator ID " + elevSim.ID + " calculated duration: %d\n", Duration)
+				fmt.Printf("\nElevator ID " + elevSim.ID + " calculated duration2: %d\n", Duration)
+				elevator.Elevator_print(elevSim)
 				return Duration
 			}
 		}
 		elevSim.Floor += int(elevSim.Dirn)
 		Duration += travelTime
+		fmt.Printf("\ncost print 2: %d\n", Duration)
 	}
 }
 
@@ -68,7 +69,9 @@ func ClearForSafety(e *elevator.Elevator, cost *int){
 		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++{
 			if requests.RequestsShouldClearImmediately(*e, floor, btn){
 				e.Requests[floor][btn] = false
-				*cost += doorOpenTime
+				*cost += doorOpenTime/3
+				fmt.Printf("same floor")
+				
 			}
 		}
 	}
