@@ -14,9 +14,9 @@ import (
 
 func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Elevator) {
 	for {
-		localElev.Available = true
+		//localElev.Available = true
 		elevStateTx <- *localElev
-		time.Sleep(1000 * time.Millisecond)
+		time.Sleep(50 * time.Millisecond)
 	}
 }
 
@@ -38,11 +38,13 @@ func DistributeOrder(buttonPress elevio.ButtonEvent,  elevOrderTx chan collector
 			
 				elevOrder := hallAssigner.ChooseOptimalElev(buttonPress, elevators) //choose optimalelev must calculat cost func for all elevs and create order to optimal elevator
 				
+				/*
 				fmt.Printf("\nOptimal elev calculated:\n")
 				fmt.Printf("optimalElevID: " + elevOrder.RecipientID + "\n")
 				fmt.Printf("Floor: %d \n", elevOrder.Order.Floor)
 				fmt.Printf("Button: %d \n", elevOrder.Order.Button)
-					
+				*/
+				
 				elevOrderTx<-elevOrder
 
 				
