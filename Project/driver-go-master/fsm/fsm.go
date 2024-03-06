@@ -97,7 +97,7 @@ func Fsm_onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevato
 			case elevator.EB_Idle:
 		}
 	}
-	setAllLights(*elev)
+	SetCabLights(*elev)
 	//print("\nNew state:\n")
 	//elevator.Elevator_print(*elev)
 }
@@ -119,26 +119,52 @@ func Fsm_onFloorArrival(newFloor int, elev *elevator.Elevator) {
 
 			time.AfterFunc(TimerDuration, func() { onDoorTimeout(elev) })
 
-			setAllLights(*elev)
+			SetCabLights(*elev)
 			elev.Behaviour = elevator.EB_DoorOpen
 
-		}
+		}()
 	}
 	//print("\nNew state:\n")
 	//elevator.Elevator_print(*elev)
 
 }
 
-//OBS! Har byttet slik at bare CAB-lights skal lyse opp med denne funksjonen. (endret fra btn:= elevio.BT_HallUp, og fjernet +1 på btn < elevio.BT_Cab).
-func setAllLights(elev elevator.Elevator) {
+func SetCabLights(elev elevator.Elevator) {
 	for floor := 0; floor < elevator.N_FLOORS; floor++ {
-		for btn := elevio.BT_Cab; btn < elevio.BT_Cab; btn++ { //Tror dette er fikset, ønsker vi +1?
-			if elev.Requests[floor][btn] {
+		if elev.Requests[floor][elevio.BT_Cab] {
+			elevio.SetButtonLamp(elevio.BT_Cab, floor, true)
+		} else {
+			elevio.SetButtonLamp(elevio.BT_Cab, floor, false)
+		}
+	}
+}
+
+
+
+func SetHallLights(elevators *[settings.NumElevs]elevator.Elevator){
+	//lager en matrise med nuller
+	hallMatrix := make([][]bool, elevator.N_FLOORS)
+    for i := range hallMatrix {
+        hallMatrix[i] = make([]bool, elevator.N_BUTTONS - 1) //tar bare med hall_requests
+    } 
+
+	//går gjennom hvert Hall-element i hver heis sin matrise og OR'er med hvert element i hallMatrix
+	for id := 0; id < len(elevators); id++ {
+		for floor := 0; floor < elevator.N_FLOORS; floor++ {
+			for btn := elevio.BT_HallUp; btn < elevio.BT_HallDown; btn ++{
+				hallMatrix[floor][btn] = hallMatrix[floor][btn] || elevators[id].Requests[floor][btn]
+			}
+		}
+	}
+
+	for floor := 0; floor < elevator.N_FLOORS; floor++ {
+		for btn := elevio.BT_HallUp; btn < elevio.BT_HallDown; btn++{
+			if elev.Requests[floor][elevio.BT_Cab] {
 				elevio.SetButtonLamp(btn, floor, true)
 			} else {
 				elevio.SetButtonLamp(btn, floor, false)
 			}
-		}
+		}	
 	}
 }
 
