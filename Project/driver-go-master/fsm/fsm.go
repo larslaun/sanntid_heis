@@ -1,12 +1,14 @@
 package fsm
 
 import (
+	"Elev-project/collector"
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
 	"Elev-project/driver-go-master/requests"
+	"Elev-project/distributor"
+	"Elev-project/settings"
 	"fmt"
 	"time"
-	"Elev-project/collector"
 )
 
 const TimerDuration = time.Duration(3) * time.Second
@@ -17,24 +19,33 @@ func Fsm_onInitBetweenFloors(elev *elevator.Elevator) {
 	elev.Behaviour = elevator.EB_Moving
 }
 
-func Fsm_server(elevOrderRx chan collector.ElevatorOrder, floors chan int, obstr chan bool, stop chan bool, elev *elevator.Elevator) {
+func Fsm_server(elevOrderRx chan collector.ElevatorOrder, elevOrderTx chan collector.ElevatorOrder, buttons chan elevio.ButtonEvent ,floors chan int, obstr chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
 	
 	for{
 
 		//elevator.Elevator_print(*elev)
 		select {
-		
-		case a := <- elevOrderRx: //mulig måte å gjøre på?? trenger muligens ikke collect order da?
-		//case a := <-buttons:
-			
+
+		case a := <- elevOrderRx: 
 			if a.RecipientID==elev.ID{
 				fmt.Print("Received new order: ")
 				fmt.Printf("%+v\n", a.Order)
 				Fsm_onRequestButtonPress(a.Order, elev)
 			}
 
+
+		case buttonPress := <-buttons:
+			if buttonPress.Button == elevio.BT_Cab{
+				fmt.Print("Recieved new cab order: ")
+				fmt.Printf("%+v\n", buttonPress)
+				Fsm_onRequestButtonPress(buttonPress, elev)
+			}else{
+				distributor.DistributeOrder(buttonPress, elevOrderTx, elevators)
+			}
+
+
 		case a := <-floors:
-			fmt.Printf("%+v\n", a)
+			//fmt.Printf("%+v\n", a)
 			Fsm_onFloorArrival(a, elev)
 
 		case a := <-obstr:
@@ -147,6 +158,7 @@ func onDoorTimeout(elev *elevator.Elevator) {
 			*elev = requests.RequestsClearAtCurrentFloor(*elev)
 
 		case elevator.EB_Moving:
+			elevio.SetDoorOpenLamp(false)
 			elevio.SetMotorDirection(elev.Dirn) //Var ikke i elev_algo men tror den må være her
 		case elevator.EB_Idle:
 			elevio.SetDoorOpenLamp(false)

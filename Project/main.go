@@ -4,13 +4,16 @@ import (
 	"Elev-project/collector"
 	"Elev-project/distributor"
 	"Elev-project/driver-go-master/elevator"
+	"Elev-project/watchdog"
 
 	"Elev-project/Network-go-master/network/bcast"
 	"Elev-project/Network-go-master/network/localip"
 	"Elev-project/Network-go-master/network/peers"
+
 	//"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
 	"Elev-project/driver-go-master/fsm"
+
 	//"Elev-project/driver-go-master/cost_function"
 	"flag"
 	"fmt"
@@ -78,13 +81,20 @@ func main() {
 	go elevio.PollObstructionSwitch(drv_obstr)
 	go elevio.PollStopButton(drv_stop)
 
+
+	watchdog_floors := make(chan int)
+	redistributeSignal := make(chan bool)
+
+	go elevio.PollFloorSensor(watchdog_floors)
+	go watchdog.LocalWatchdog(watchdog_floors, &elev, redistributeSignal)
+	go watchdog.NetworkWatchdog(peerUpdateCh, &elevators)
 	
 	go collector.CollectStates(elevStateRx, &elevators)
 	go distributor.DistributeState(elevStateTx, &elev)
-	go distributor.DistributeOrder(drv_buttons, elevOrderTx, &elevators)
+	go distributor.RedistributeFaultyElevOrders(elevOrderTx, &elevators, &elev, redistributeSignal)
 
 
-	go fsm.Fsm_server(elevOrderRx, drv_floors, drv_obstr, drv_stop, &elev)
+	go fsm.Fsm_server(elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstr, drv_stop, &elev, &elevators)
 
 
 
@@ -94,12 +104,12 @@ func main() {
 	//fmt.Printf("\nTime to idle: %d\n", i)
 
 	select {
-	/*
+		/*
 		case p := <-peerUpdateCh:
 			fmt.Printf("Peer update:\n")
 			fmt.Printf("  Peers:    %q\n", p.Peers)
 			fmt.Printf("  New:      %q\n", p.New)
 			fmt.Printf("  Lost:     %q\n", p.Lost)
-	*/
+		*/
 	}
 }

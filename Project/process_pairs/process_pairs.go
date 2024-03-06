@@ -1,4 +1,8 @@
+package process_pairs
 
+import(
+	"fmt"
+)
 
 
 
@@ -9,7 +13,7 @@
 
 
 	//Processing pairs
-	print("This is slave\n")
+	fmt.print("This is slave\n")
 	timer1 := time.NewTimer(2 * time.Second)
 	
 	backupLoop:
