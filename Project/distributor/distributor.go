@@ -20,24 +20,6 @@ func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Ele
 	}
 }
 
-func HallMatrix(elevators *[settings.NumElevs]elevator.Elevator) [elevator.N_FLOORS][elevator.N_BUTTONS - 1] bool {
-	//lager en matrise med nuller
-	hallMatrix := make([][]bool, elevator.N_FLOORS)
-    for i := range hallMatrix {
-        hallMatrix[i] = make([]bool, elevator.N_BUTTONS - 1) //tar bare med hall_requests
-    } 
-
-	//går gjennom hvert Hall-element i hver heis sin matrise og OR'er med hvert element i resultMatrix
-	for id := 0; id < len(elevators); id++ {
-		for floor := 0; floor < elevator.N_FLOORS; floor++ {
-			for btn := elevio.BT_HallUp; btn < elevio.BT_HallDown; btn ++{
-				hallMatrix[floor][btn] = hallMatrix[floor][btn] || elevators[id].Requests[floor][btn]
-			}
-		}
-	}
-
-	return hallMatrix
-}
 
 //psuedo distributor
 //Receives buttonpress, then calculates optimal elevator wiht cost func,then sends elevOrder which includes order and ID of elev.
