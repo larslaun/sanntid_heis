@@ -155,6 +155,7 @@ func onDoorTimeout(elev *elevator.Elevator) {
 			*elev = requests.RequestsClearAtCurrentFloor(*elev)
 
 		case elevator.EB_Moving:
+			elevio.SetDoorOpenLamp(false)
 			elevio.SetMotorDirection(elev.Dirn) //Var ikke i elev_algo men tror den må være her
 		case elevator.EB_Idle:
 			elevio.SetDoorOpenLamp(false)

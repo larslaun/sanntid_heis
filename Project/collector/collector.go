@@ -38,8 +38,9 @@ func CollectStates(elevStateRx chan elevator.Elevator, elevators *[settings.NumE
 		case newState := <-elevStateRx:
 			elevID, _ := strconv.Atoi(newState.ID)
 			elevators[elevID] = newState
-			//fmt.Print("Recieved new state:")
-			//elevator.Elevator_print(elevators[elevID])
+
+			
+			
 		}
 	}
 }
