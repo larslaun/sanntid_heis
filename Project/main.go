@@ -15,7 +15,7 @@ import (
 	"Elev-project/driver-go-master/fsm"
 
 	//"Elev-project/driver-go-master/cost_function"
-	"flag"
+	
 	"fmt"
 	"os"
 	//"os/exec"
@@ -26,11 +26,14 @@ func main() {
 
 	// Our id can be anything. Here we pass it on the command line, using
 	//  `go run main.go -id=our_id`
-	var id string
-	flag.StringVar(&id, "id", "", "id of this peer")
+
 	var elevPort string
-	flag.StringVar(&elevPort, "port", "", "port of elev")
-	flag.Parse()
+	var id string
+
+	args := os.Args
+
+	id = args[1]
+	elevPort = args[2]
 
 	// ... or alternatively, we can use the local IP address.
 	// (But since we can run multiple programs on the same PC, we also append the
@@ -95,7 +98,7 @@ func main() {
 	go distributor.DistributeState(elevStateTx, &elev)
 	go distributor.RedistributeFaultyElevOrders(elevOrderTx, &elevators, &elev, redistributeSignal)
 
-	go fsm.Fsm_server(elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstr, drv_stop, &elev, &elevators)
+	go fsm.Fsm_server(elevStateRx, elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstr, drv_stop, &elev, &elevators)
 
 	//i := cost_function.TimeToIdle(elev)
 	//fmt.Printf("\nTime to idle: %d\n", i)

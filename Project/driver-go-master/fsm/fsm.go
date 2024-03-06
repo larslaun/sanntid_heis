@@ -2,10 +2,10 @@ package fsm
 
 import (
 	"Elev-project/collector"
+	"Elev-project/distributor"
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
 	"Elev-project/driver-go-master/requests"
-	"Elev-project/distributor"
 	"Elev-project/settings"
 	"fmt"
 	"time"
@@ -19,30 +19,31 @@ func Fsm_onInitBetweenFloors(elev *elevator.Elevator) {
 	elev.Behaviour = elevator.EB_Moving
 }
 
-func Fsm_server(elevOrderRx chan collector.ElevatorOrder, elevOrderTx chan collector.ElevatorOrder, buttons chan elevio.ButtonEvent ,floors chan int, obstr chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
-	
-	for{
+func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.ElevatorOrder, elevOrderTx chan collector.ElevatorOrder, buttons chan elevio.ButtonEvent, floors chan int, obstr chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
+
+	for {
 
 		//elevator.Elevator_print(*elev)
 		select {
 
-		case a := <- elevOrderRx: 
-			if a.RecipientID==elev.ID{
+		case <-elevStateRx:
+			SetHallLights(elevators)
+
+		case a := <-elevOrderRx:
+			if a.RecipientID == elev.ID {
 				fmt.Print("Received new order: ")
 				fmt.Printf("%+v\n", a.Order)
 				Fsm_onRequestButtonPress(a.Order, elev)
 			}
 
-
 		case buttonPress := <-buttons:
-			if buttonPress.Button == elevio.BT_Cab{
+			if buttonPress.Button == elevio.BT_Cab {
 				fmt.Print("Recieved new cab order: ")
 				fmt.Printf("%+v\n", buttonPress)
 				Fsm_onRequestButtonPress(buttonPress, elev)
-			}else{
+			} else {
 				distributor.DistributeOrder(buttonPress, elevOrderTx, elevators)
 			}
-
 
 		case a := <-floors:
 			//fmt.Printf("%+v\n", a)
@@ -59,7 +60,7 @@ func Fsm_server(elevOrderRx chan collector.ElevatorOrder, elevOrderTx chan colle
 
 		}
 	}
-	
+
 }
 
 func Fsm_onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevator) {
@@ -85,16 +86,16 @@ func Fsm_onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevato
 		elev.Dirn = pair.Dirn
 		elev.Behaviour = pair.Behaviour
 		switch pair.Behaviour {
-			case elevator.EB_DoorOpen:
-				elevio.SetDoorOpenLamp(true)
+		case elevator.EB_DoorOpen:
+			elevio.SetDoorOpenLamp(true)
 
-				time.AfterFunc(TimerDuration, func() { onDoorTimeout(elev) })
+			time.AfterFunc(TimerDuration, func() { onDoorTimeout(elev) })
 
-				*elev = requests.RequestsClearAtCurrentFloor(*elev)
+			*elev = requests.RequestsClearAtCurrentFloor(*elev)
 
-			case elevator.EB_Moving:
-				elevio.SetMotorDirection(elev.Dirn)
-			case elevator.EB_Idle:
+		case elevator.EB_Moving:
+			elevio.SetMotorDirection(elev.Dirn)
+		case elevator.EB_Idle:
 		}
 	}
 	SetCabLights(*elev)
@@ -122,7 +123,7 @@ func Fsm_onFloorArrival(newFloor int, elev *elevator.Elevator) {
 			SetCabLights(*elev)
 			elev.Behaviour = elevator.EB_DoorOpen
 
-		}()
+		}
 	}
 	//print("\nNew state:\n")
 	//elevator.Elevator_print(*elev)
@@ -139,37 +140,32 @@ func SetCabLights(elev elevator.Elevator) {
 	}
 }
 
-
-
-func SetHallLights(elevators *[settings.NumElevs]elevator.Elevator){
+func SetHallLights(elevators *[settings.NumElevs]elevator.Elevator) {
 	//lager en matrise med nuller
 	hallMatrix := make([][]bool, elevator.N_FLOORS)
-    for i := range hallMatrix {
-        hallMatrix[i] = make([]bool, elevator.N_BUTTONS - 1) //tar bare med hall_requests
-    } 
+	for i := range hallMatrix {
+		hallMatrix[i] = make([]bool, elevator.N_BUTTONS-1) //tar bare med hall_requests
+	}
 
 	//går gjennom hvert Hall-element i hver heis sin matrise og OR'er med hvert element i hallMatrix
 	for id := 0; id < len(elevators); id++ {
 		for floor := 0; floor < elevator.N_FLOORS; floor++ {
-			for btn := elevio.BT_HallUp; btn < elevio.BT_HallDown; btn ++{
+			for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
 				hallMatrix[floor][btn] = hallMatrix[floor][btn] || elevators[id].Requests[floor][btn]
 			}
 		}
 	}
 
 	for floor := 0; floor < elevator.N_FLOORS; floor++ {
-		for btn := elevio.BT_HallUp; btn < elevio.BT_HallDown; btn++{
-			if elev.Requests[floor][elevio.BT_Cab] {
+		for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
+			if hallMatrix[floor][btn] {
 				elevio.SetButtonLamp(btn, floor, true)
 			} else {
 				elevio.SetButtonLamp(btn, floor, false)
 			}
-		}	
+		}
 	}
 }
-
-
-
 
 func onDoorTimeout(elev *elevator.Elevator) {
 
@@ -198,19 +194,18 @@ func onDoorTimeout(elev *elevator.Elevator) {
 
 }
 
-
 func Elev_init(elev *elevator.Elevator, elevID string) {
 	elevator.Elevator_uninitialized(elev, elevID)
 	//if elevio.GetFloor() == -1 {
-		Fsm_onInitBetweenFloors(elev)
+	Fsm_onInitBetweenFloors(elev)
 	//}
-	setAllLights(*elev)
+	SetCabLights(*elev)
 	for floor := 0; floor < elevator.N_FLOORS; floor++ {
-		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++ { 
+		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++ {
 			elevio.SetButtonLamp(btn, floor, false)
 		}
 	}
 
 	print("\nElevator initialized at following state: \n")
-	elevator.Elevator_print(*elev)	
+	elevator.Elevator_print(*elev)
 }
