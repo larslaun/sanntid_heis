@@ -12,13 +12,15 @@ const Time int = 3
 
 WatchdogTimer := time.NewTimer(Time * time.Second)
 
-
+/*
 Loop:
 	for {
 		select {
-		case 
+		case a <- 
 			
 		case 
 			
 		}
 	}
+
+*/  

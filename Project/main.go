@@ -58,7 +58,7 @@ func main() {
 	go bcast.Receiver(21008, elevOrderRx)
 
 	var elev elevator.Elevator
-	//This is were process pairs were
+	//This is where process pairs were
 	numFloors := 4
 	elevio.Init("localhost:"+elevPort, numFloors)
 	fsm.Elev_init(&elev, id)
