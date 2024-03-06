@@ -61,7 +61,10 @@ func main() {
 	go bcast.Transmitter(20008, elevStateTx)
 	go bcast.Receiver(20008, elevStateRx)
 
-	
+	elevStateRx2 := make(chan elevator.Elevator)
+	go bcast.Receiver(20008, elevStateRx2)
+
+
 
 	//Må finne ut at av hvilke porter som kan brukes
 	elevOrderTx := make(chan collector.ElevatorOrder)
@@ -100,7 +103,7 @@ func main() {
 	go distributor.DistributeState(elevStateTx, &elev)
 	go distributor.RedistributeFaultyElevOrders(elevOrderTx, &elevators, &elev, redistributeSignal)
 
-	go fsm.Fsm_server(elevStateRx, elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstr, drv_stop, &elev, &elevators)
+	go fsm.Fsm_server(elevStateRx2, elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstr, drv_stop, &elev, &elevators)
 
 	//i := cost_function.TimeToIdle(elev)
 	//fmt.Printf("\nTime to idle: %d\n", i)
