@@ -120,7 +120,7 @@ func RequestsShouldClearImmediately(e elevator.Elevator, btnFloor int, btnType e
 // function clears request from the cab at the current floor.
 // if the elevator is going up and there are no more requests above or requests UP at the current floor, it will clear the DOWN-request.
 // It also clears requests for UP as default, there are either no requests there, or it continues to go UP.
-// If the elevetor state is Stop, it clears both UP and DOWN hall calls, probably only one of them at that floor, since the elevator door will open for one of (the first) the requests.
+// If the elevator state is Stop, it clears both UP and DOWN hall calls, probably only one of them at that floor, since the elevator door will open for one of (the first) the requests.
 func RequestsClearAtCurrentFloor(e elevator.Elevator) elevator.Elevator {
 	e.Requests[e.Floor][elevio.BT_Cab] = false //endret fra 0 til false
 
