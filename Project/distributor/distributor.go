@@ -59,6 +59,8 @@ func DistributeOrder(buttonPress elevio.ButtonEvent,  elevOrderTx chan collector
 				fmt.Printf("Button: %d \n", elevOrder.Order.Button)
 					
 				elevOrderTx<-elevOrder
+
+				
 			//}
 		//}
 	//}

@@ -22,3 +22,21 @@ Loop:
 			
 		}
 	}
+
+
+func localWatchdog(floors chan int){
+	watchdogTimer := time.NewTimer(settings.WatchdogTimeoutDuration * time.Second)
+	for{
+		select{
+		case <-watchdogTimer.C:
+			if not empty{
+				redistribute FLAGG?
+			}
+		case <-floors:
+			watchdogTimer.Reset(settings.WatchdogTimeoutDuration * time.Second)
+		}
+	}
+}
+
+
+

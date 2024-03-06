@@ -78,6 +78,10 @@ func main() {
 	go elevio.PollObstructionSwitch(drv_obstr)
 	go elevio.PollStopButton(drv_stop)
 
+
+	watchdog_floors := make(chan int)
+	go elevio.PollFloorSensor(watchdog_floors)
+
 	
 	go collector.CollectStates(elevStateRx, &elevators)
 	go distributor.DistributeState(elevStateTx, &elev)
@@ -94,12 +98,12 @@ func main() {
 	//fmt.Printf("\nTime to idle: %d\n", i)
 
 	select {
-	/*
+		/*
 		case p := <-peerUpdateCh:
 			fmt.Printf("Peer update:\n")
 			fmt.Printf("  Peers:    %q\n", p.Peers)
 			fmt.Printf("  New:      %q\n", p.New)
 			fmt.Printf("  Lost:     %q\n", p.Lost)
-	*/
+		*/
 	}
 }
