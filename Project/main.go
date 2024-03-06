@@ -4,13 +4,16 @@ import (
 	"Elev-project/collector"
 	"Elev-project/distributor"
 	"Elev-project/driver-go-master/elevator"
+	"Elev-project/watchdog"
 
 	"Elev-project/Network-go-master/network/bcast"
 	"Elev-project/Network-go-master/network/localip"
 	"Elev-project/Network-go-master/network/peers"
+
 	//"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
 	"Elev-project/driver-go-master/fsm"
+
 	//"Elev-project/driver-go-master/cost_function"
 	"flag"
 	"fmt"
@@ -80,12 +83,15 @@ func main() {
 
 
 	watchdog_floors := make(chan int)
+	redistributeSignal := make(chan bool)
+
 	go elevio.PollFloorSensor(watchdog_floors)
+	go watchdog.LocalWatchdog(watchdog_floors, &elev, redistributeSignal)
 
 	
 	go collector.CollectStates(elevStateRx, &elevators)
 	go distributor.DistributeState(elevStateTx, &elev)
-	//go distributor.DistributeOrder(drv_buttons, elevOrderTx, &elevators)
+	go distributor.RedistributeFaultyElevOrders(elevOrderTx, &elevators, &elev, redistributeSignal)
 
 
 	go fsm.Fsm_server(elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstr, drv_stop, &elev, &elevators)

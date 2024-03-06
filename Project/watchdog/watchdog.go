@@ -3,37 +3,31 @@ package watchdog
 
 import (
 	"Elev-project/driver-go-master/elevator"
-	"Elev-project/driver-go-master/elevio"
+	"Elev-project/driver-go-master/requests"
+	"Elev-project/settings"
 	"fmt"
+	"time"
 
 )
 
-const Time int = 3
-
-WatchdogTimer := time.NewTimer(Time * time.Second)
-
-/*
-Loop:
-	for {
-		select {
-		case a <- 
-			
-		case 
-			
-		}
-	}
 
 
-func localWatchdog(floors chan int){
+
+func LocalWatchdog(floors chan int, elev *elevator.Elevator, redistributeSignal chan bool){
 	watchdogTimer := time.NewTimer(settings.WatchdogTimeoutDuration * time.Second)
 	for{
 		select{
 		case <-watchdogTimer.C:
-			if not empty{
-				redistribute FLAGG?
+			if requests.HasRequests(*elev){
+				redistributeSignal <- true
+				elev.Available = false
+			} else{
+				watchdogTimer.Reset(settings.WatchdogTimeoutDuration * time.Second)
 			}
 		case <-floors:
 			watchdogTimer.Reset(settings.WatchdogTimeoutDuration * time.Second)
+			fmt.Print("\nWatchdog reset\n")
+			elev.Available = true
 		}
 	}
 }
