@@ -63,7 +63,7 @@ func main() {
 	go bcast.Receiver(21008, elevOrderRx)
 
 	var elev elevator.Elevator
-	//This is were process pairs were
+	//This is where process pairs were
 	numFloors := 4
 	elevio.Init("localhost:"+elevPort, numFloors)
 	fsm.Elev_init(&elev, id)
@@ -86,10 +86,10 @@ func main() {
 	
 	go collector.CollectStates(elevStateRx, &elevators)
 	go distributor.DistributeState(elevStateTx, &elev)
-	go distributor.DistributeOrder(drv_buttons, elevOrderTx, &elevators)
+	//go distributor.DistributeOrder(drv_buttons, elevOrderTx, &elevators)
 
 
-	go fsm.Fsm_server(elevOrderRx, drv_floors, drv_obstr, drv_stop, &elev)
+	go fsm.Fsm_server(elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstr, drv_stop, &elev, &elevators)
 
 
 
