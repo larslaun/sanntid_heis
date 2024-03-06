@@ -28,7 +28,7 @@ func Fsm_server(elevOrderRx chan collector.ElevatorOrder, floors chan int, obstr
 		//case a := <-buttons:
 			
 			if a.RecipientID==elev.ID{
-				fmt.Print("Recieved new order: ")
+				fmt.Print("Received new order: ")
 				fmt.Printf("%+v\n", a.Order)
 				Fsm_onRequestButtonPress(a.Order, elev)
 			}
@@ -74,16 +74,16 @@ func Fsm_onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevato
 		elev.Dirn = pair.Dirn
 		elev.Behaviour = pair.Behaviour
 		switch pair.Behaviour {
-		case elevator.EB_DoorOpen:
-			elevio.SetDoorOpenLamp(true)
+			case elevator.EB_DoorOpen:
+				elevio.SetDoorOpenLamp(true)
 
-			time.AfterFunc(TimerDuration, func() { onDoorTimeout(elev) })
+				time.AfterFunc(TimerDuration, func() { onDoorTimeout(elev) })
 
-			*elev = requests.RequestsClearAtCurrentFloor(*elev)
+				*elev = requests.RequestsClearAtCurrentFloor(*elev)
 
-		case elevator.EB_Moving:
-			elevio.SetMotorDirection(elev.Dirn)
-		case elevator.EB_Idle:
+			case elevator.EB_Moving:
+				elevio.SetMotorDirection(elev.Dirn)
+			case elevator.EB_Idle:
 		}
 	}
 	setAllLights(*elev)
@@ -129,6 +129,9 @@ func setAllLights(elev elevator.Elevator) {
 		}
 	}
 }
+
+
+
 
 func onDoorTimeout(elev *elevator.Elevator) {
 
