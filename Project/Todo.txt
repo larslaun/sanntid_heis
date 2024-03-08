@@ -53,3 +53,15 @@ O:
 Button lights
 -Only turn on after master has distributed order list and recieved ack
 
+
+
+Update 06.03.2024
+
+- Implement obsruction: functionality for keeping door open when obsr is true
+- Implement cab call recovery: recovers the cab calls for a spesific elevator if it is turned off
+- Implement acknowledgement for distributeOrder
+- Redistrbute hall calls when elevator is not able to complete them. 
+- 
+
+In addition : 
+- Implement prosess pairs

@@ -1,8 +1,9 @@
 package elevator
 
-import "Elev-project/driver-go-master/elevio"
-import "fmt"
-
+import (
+	"Elev-project/driver-go-master/elevio"
+	"fmt"
+)
 
 //Deklarerer her foreløpig
 const N_FLOORS int = 4
@@ -92,7 +93,6 @@ func Elevator_uninitialized(es *Elevator, elevID string){  //initialize elevator
 	es.Floor = 1  //OBS! endret denne til 1 istedenfor -1 pga. index feil. Kan virke som dette funker siden man poller floor uansett og det vil bli endret til riktig
 	es.Dirn = elevio.MD_Stop
 	es.Behaviour = EB_Idle
-	es.DoorOpenDuration = 3
 	es.ID = elevID
 	es.Available = false
 	es.Obstruction = false 

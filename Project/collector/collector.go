@@ -17,8 +17,6 @@ type ElevatorOrder struct{
 }
 
 
-
-
 func ElevatorsInit() [settings.NumElevs]elevator.Elevator{
 	var elevators = [settings.NumElevs]elevator.Elevator{}
 
@@ -41,6 +39,7 @@ func CollectStates(elevStateRx chan elevator.Elevator, elevators *[settings.NumE
 		}
 	}
 }
+
 
 
 
