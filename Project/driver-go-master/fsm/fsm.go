@@ -47,7 +47,7 @@ func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.E
 		case a := <-floors:
 			//fmt.Printf("%+v\n", a)
 			Fsm_onFloorArrival(a, elev)
-			
+
 		case a := <-obstruction:
 			fmt.Printf("%+v\n", a)
 			elev.Obstruction = a
