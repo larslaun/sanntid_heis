@@ -24,16 +24,19 @@ func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.E
 		//elevator.Elevator_print(*elev)
 		select {
 
+		
 		case receivedElev := <-elevStateRx:
 			SetHallLights(elevators)
 			if elev.ID == receivedElev.ID{
 				SetCabLights(receivedElev)
 			}
-
+			
 		case a := <-elevOrderRx:
+			if a.RecipientID == elev.ID{
 			fmt.Print("Received new order: ")
 			fmt.Printf("%+v\n", a.Order)
 			Fsm_onRequestButtonPress(a.Order, elev)
+			}
 		
 		case a := <-floors:
 			//fmt.Printf("%+v\n", a)
