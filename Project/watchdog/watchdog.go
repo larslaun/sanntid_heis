@@ -30,7 +30,7 @@ func LocalWatchdog(floors chan int, elev *elevator.Elevator, redistributeSignal 
 	}
 }
 
-func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, elevators *[settings.NumElevs]elevator.Elevator) {
+func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, elevators *[settings.NumElevs]elevator.Elevator, recoveryElevators *[settings.NumElevs]elevator.Elevator) {
 	for {
 		select {
 		case peers := <-peerUpdateCh:
@@ -38,7 +38,6 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, elevators *[settings.Nu
 			fmt.Printf("  Peers:    %q\n", peers.Peers)
 			fmt.Printf("  New:      %q\n", peers.New)
 			fmt.Printf("  Lost:     %q\n", peers.Lost)
-
 
 			newElev, _ := strconv.Atoi(peers.New)
 			elevators[newElev].Available = true
@@ -50,6 +49,7 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, elevators *[settings.Nu
 			for _, s := range lostElevs{
 				s, _ := strconv.Atoi(s)
 				elevators[s].Available = false
+				recoveryElevators[s].Requests = elevators[s].Requests
 				fmt.Printf("\nLost elevator ID %d:\n", s)
 				elevator.Elevator_print(elevators[s])
 			} 
