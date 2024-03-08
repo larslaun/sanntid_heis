@@ -11,7 +11,6 @@ import (
 	"time"
 )
 
-const TimerDuration = time.Duration(3) * time.Second
 
 func Fsm_onInitBetweenFloors(elev *elevator.Elevator) {
 	elevio.SetMotorDirection(elevio.MD_Down)
@@ -19,7 +18,7 @@ func Fsm_onInitBetweenFloors(elev *elevator.Elevator) {
 	elev.Behaviour = elevator.EB_Moving
 }
 
-func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.ElevatorOrder, elevOrderTx chan collector.ElevatorOrder, buttons chan elevio.ButtonEvent, floors chan int, obstr chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
+func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.ElevatorOrder, elevOrderTx chan collector.ElevatorOrder, buttons chan elevio.ButtonEvent, floors chan int, obstruction chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
 
 	for {
 
@@ -48,10 +47,16 @@ func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.E
 		case a := <-floors:
 			//fmt.Printf("%+v\n", a)
 			Fsm_onFloorArrival(a, elev)
-
-		case a := <-obstr:
+			
+		case a := <-obstruction:
 			fmt.Printf("%+v\n", a)
-			//lag ny funksjon her eller finnes det allerede?
+			elev.Obstruction = a
+
+			//While the obstruction  is true, onFloorArrival should continue to run, holding the door open. 
+			for elev.obstruction {
+				Fsm_onFloorArrival(elev.Floor, elev)
+			}
+			
 
 		case a := <-stop:
 			fmt.Printf("%+v\n", a)
@@ -71,7 +76,7 @@ func Fsm_onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevato
 	case elevator.EB_DoorOpen:
 		if requests.RequestsShouldClearImmediately(*elev, buttons.Floor, buttons.Button) {
 
-			time.AfterFunc(TimerDuration, func() { onDoorTimeout(elev) })
+			time.AfterFunc(setting.DoorOpenDuration, func() { onDoorTimeout(elev) })
 
 		} else {
 			elev.Requests[buttons.Floor][buttons.Button] = true
@@ -89,7 +94,7 @@ func Fsm_onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevato
 		case elevator.EB_DoorOpen:
 			elevio.SetDoorOpenLamp(true)
 
-			time.AfterFunc(TimerDuration, func() { onDoorTimeout(elev) })
+			time.AfterFunc(settings.DoorOpenDuration, func() { onDoorTimeout(elev) })
 
 			*elev = requests.RequestsClearAtCurrentFloor(*elev)
 
@@ -118,7 +123,7 @@ func Fsm_onFloorArrival(newFloor int, elev *elevator.Elevator) {
 
 			*elev = requests.RequestsClearAtCurrentFloor(*elev)
 
-			time.AfterFunc(TimerDuration, func() { onDoorTimeout(elev) })
+			time.AfterFunc(settings.DoorOpenDuration, func() { onDoorTimeout(elev) })
 
 			SetCabLights(*elev)
 			elev.Behaviour = elevator.EB_DoorOpen
@@ -141,13 +146,14 @@ func SetCabLights(elev elevator.Elevator) {
 }
 
 func SetHallLights(elevators *[settings.NumElevs]elevator.Elevator) {
-	//lager en matrise med nuller
+	//making a matrix with zeros
 	hallMatrix := make([][]bool, elevator.N_FLOORS)
 	for i := range hallMatrix {
-		hallMatrix[i] = make([]bool, elevator.N_BUTTONS-1) //tar bare med hall_requests
+		hallMatrix[i] = make([]bool, elevator.N_BUTTONS-1) //only including hall-requests
 	}
 
-	//går gjennom hvert Hall-element i hver heis sin matrise og OR'er med hvert element i hallMatrix
+	//Iterating through each Hall-request in every elevator's matrix and OR'ing with every element in the hallMatrix.
+	//This creates a "common" boolean matrix for hallCalls used to light every hall call button of the same type. 
 	for id := 0; id < len(elevators); id++ {
 		for floor := 0; floor < elevator.N_FLOORS; floor++ {
 			for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
@@ -156,6 +162,7 @@ func SetHallLights(elevators *[settings.NumElevs]elevator.Elevator) {
 		}
 	}
 
+	//Setting the lights using the bools in hallMatrix.
 	for floor := 0; floor < elevator.N_FLOORS; floor++ {
 		for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
 			if hallMatrix[floor][btn] {
@@ -177,7 +184,7 @@ func onDoorTimeout(elev *elevator.Elevator) {
 
 		switch elev.Behaviour {
 		case elevator.EB_DoorOpen:
-			time.AfterFunc(TimerDuration, func() { onDoorTimeout(elev) })
+			time.AfterFunc(settings.DoorOpenDuration, func() { onDoorTimeout(elev) })
 			*elev = requests.RequestsClearAtCurrentFloor(*elev)
 
 		case elevator.EB_Moving:
