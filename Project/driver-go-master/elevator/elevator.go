@@ -24,11 +24,8 @@ type Elevator struct{
 	Requests[N_FLOORS][N_BUTTONS] bool 
 	Behaviour ElevatorBehaviour
 	ID string
-	Available bool 
-
-
-	//Config
-	DoorOpenDuration int	
+	Available bool 	
+	Obstruction bool
 }
 
 
@@ -60,6 +57,9 @@ func Elevator_print(es Elevator){
 	fmt.Print("\n")
 	fmt.Printf("Availible: ")
 	fmt.Print(es.Available)
+	fmt.Print("\n")
+	fmt.Printf("Obstruction: ")
+	fmt.Print(es.Obstruction)
 	fmt.Print("\n")
 	fmt.Print("  +--------------------+\n")
 	fmt.Printf("  |floor = %-2d|\n", es.Floor)
@@ -95,6 +95,7 @@ func Elevator_uninitialized(es *Elevator, elevID string){  //initialize elevator
 	es.DoorOpenDuration = 3
 	es.ID = elevID
 	es.Available = false
+	es.Obstruction = false 
 }
 
 
