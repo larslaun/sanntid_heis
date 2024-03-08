@@ -8,8 +8,6 @@ import (
 	"Elev-project/settings"
 	"Elev-project/collector"
 	"fmt"
-
-	//"fmt"
 	"strconv"
 	"time"
 )
