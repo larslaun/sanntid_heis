@@ -4,6 +4,7 @@ import (
 	"Elev-project/collector"
 	"Elev-project/distributor"
 	"Elev-project/driver-go-master/elevator"
+	"Elev-project/settings"
 	"Elev-project/watchdog"
 
 	"Elev-project/Network-go-master/network/bcast"
@@ -15,7 +16,7 @@ import (
 	"Elev-project/driver-go-master/fsm"
 
 	//"Elev-project/driver-go-master/cost_function"
-	
+
 	"fmt"
 	"os"
 	//"os/exec"
@@ -74,11 +75,11 @@ func main() {
 
 	var elev elevator.Elevator
 	//This is where process pairs were
-	numFloors := 4
-	elevio.Init("localhost:"+elevPort, numFloors)
+	elevio.Init("localhost:"+elevPort, settings.NumFloors)
 	fsm.Elev_init(&elev, id)
 	elevators := collector.ElevatorsInit()
-	for i := 0; i < 3; i++ {
+	recoveryElevators := collector.ElevatorsInit()
+	for i := 0; i < settings.NumElevs; i++ {
 		elevator.Elevator_print(elevators[i])
 	}
 
@@ -97,7 +98,7 @@ func main() {
 
 	go elevio.PollFloorSensor(watchdog_floors)
 	go watchdog.LocalWatchdog(watchdog_floors, &elev, redistributeSignal)
-	go watchdog.NetworkWatchdog(peerUpdateCh, &elevators)
+	go watchdog.NetworkWatchdog(peerUpdateCh, &elevators, &recoveryElevators)
 
 	go collector.CollectStates(elevStateRx, &elevators)
 	go distributor.DistributeState(elevStateTx, &elev)
