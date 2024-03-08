@@ -2,9 +2,11 @@ package watchdog
 
 import (
 	"Elev-project/Network-go-master/network/peers"
+	"Elev-project/distributor"
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/requests"
 	"Elev-project/settings"
+	"Elev-project/collector"
 	"fmt"
 
 	//"fmt"
@@ -12,13 +14,13 @@ import (
 	"time"
 )
 
-func LocalWatchdog(floors chan int, elev *elevator.Elevator, redistributeSignal chan bool) {
+func LocalWatchdog(floors chan int, elev *elevator.Elevator, elevOrderTx chan collector.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
 	watchdogTimer := time.NewTimer(settings.WatchdogTimeoutDuration)
 	for {
 		select {
 		case <-watchdogTimer.C:
 			if requests.HasRequests(*elev) {
-				redistributeSignal <- true
+				distributor.RedistributeFaultyElevOrders(elevOrderTx, elevStateRx, elevators, elev)
 				elev.Available = false
 			} else {
 				watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
