@@ -8,7 +8,6 @@ import (
 	"Elev-project/watchdog"
 
 	"Elev-project/Network-go-master/network/bcast"
-	"Elev-project/Network-go-master/network/localip"
 	"Elev-project/Network-go-master/network/peers"
 
 	//"Elev-project/driver-go-master/elevator"
@@ -17,7 +16,7 @@ import (
 
 	//"Elev-project/driver-go-master/cost_function"
 
-	"fmt"
+	//"fmt"
 	"os"
 	//"os/exec"
 	//"time"
@@ -36,18 +35,6 @@ func main() {
 	id = args[1]
 	elevPort = args[2]
 
-	// ... or alternatively, we can use the local IP address.
-	// (But since we can run multiple programs on the same PC, we also append the
-	//  process ID)
-	if id == "" {
-		localIP, err := localip.LocalIP()
-		if err != nil {
-			fmt.Println(err)
-			localIP = "DISCONNECTED"
-		}
-		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
-	}
-
 	if elevPort == "" {
 		elevPort = "15657"
 	}
@@ -64,8 +51,6 @@ func main() {
 
 	elevStateRx2 := make(chan elevator.Elevator)
 	go bcast.Receiver(20008, elevStateRx2)
-
-
 
 	//Må finne ut at av hvilke porter som kan brukes
 	elevOrderTx := make(chan collector.ElevatorOrder)
@@ -94,21 +79,26 @@ func main() {
 	go elevio.PollStopButton(drv_stop)
 
 	watchdog_floors := make(chan int)
+	watchdog_elevOrderTx := make(chan collector.ElevatorOrder)
+	go bcast.Transmitter(21008, watchdog_elevOrderTx)
+
+	watchdog_elevStateRx := make(chan elevator.Elevator)
+	go bcast.Receiver(20008, watchdog_elevStateRx)
+
+	
 
 	go elevio.PollFloorSensor(watchdog_floors)
-	go watchdog.LocalWatchdog(watchdog_floors, &elev, elevOrderTx, elevStateRx, &elevators)
+	go watchdog.LocalWatchdog(watchdog_floors, &elev, watchdog_elevOrderTx, watchdog_elevStateRx, &elevators)
 	go watchdog.NetworkWatchdog(peerUpdateCh, &elevators, &recoveryElevators)
 
 	go collector.CollectStates(elevStateRx, &elevators)
 	go distributor.DistributeState(elevStateTx, &elev)
-	go distributor.DistributeOrder(drv_buttons, elevOrderTx, elevStateRx2,&elevators, &elev)
-
+	go distributor.DistributeOrder(drv_buttons, elevOrderTx, elevStateRx2, &elevators, &elev)
 
 	go fsm.Fsm_server(elevStateRx2, elevOrderRx, drv_floors, drv_obstruction, drv_stop, &elev, &elevators)
 
 	//i := cost_function.TimeToIdle(elev)
 	//fmt.Printf("\nTime to idle: %d\n", i)
 
-	select {
-	}
+	select {}
 }

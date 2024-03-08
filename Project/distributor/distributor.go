@@ -23,10 +23,16 @@ func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Ele
 //Receives buttonpress, then calculates optimal elevator wiht cost func,then sends elevOrder which includes order and ID of elev.
 
 func DistributeOrder(buttonPress chan elevio.ButtonEvent, elevOrderTx chan collector.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, localElev *elevator.Elevator) {
-	for {
 		select {
 		case buttonPress := <-buttonPress:
 			elevOrder := hallAssigner.ChooseOptimalElev(buttonPress, elevators)
+			
+			elevator.Elevator_print(*localElev)
+
+			fmt.Printf("\nOptimal elev calculated:\n")
+			fmt.Printf("optimalElevID: " + elevOrder.RecipientID + "\n")
+			fmt.Printf("Floor: %d \n", elevOrder.Order.Floor)
+			fmt.Printf("Button: %d \n", elevOrder.Order.Button)
 
 			if buttonPress.Button == elevio.BT_Cab {
 				elevOrder.RecipientID = localElev.ID
@@ -35,17 +41,20 @@ func DistributeOrder(buttonPress chan elevio.ButtonEvent, elevOrderTx chan colle
 
 			transmissionFailures := 0
 
+			sendNewMsg := time.NewTimer(time.Millisecond * 200)
+
 			for {
 				select {
 				case recievedState := <-elevStateRx:
 					if recievedState.ID == elevOrder.RecipientID {
 						fmt.Print("1")
+						fmt.Print(recievedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button])
 						if recievedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button] {
 							fmt.Print("2")
 							return
 						}
 					}
-				case <-time.After(time.Millisecond * 500):
+				case <- sendNewMsg.C:
 					transmissionFailures++
 					fmt.Print("3")
 
@@ -60,9 +69,9 @@ func DistributeOrder(buttonPress chan elevio.ButtonEvent, elevOrderTx chan colle
 							elevOrder.RecipientID = localElev.ID
 							elevators[RecieverID].Available = true
 						}
-						elevOrderTx <- elevOrder
 						transmissionFailures = 0
 					}
+					elevOrderTx <- elevOrder
 				}
 			}
 
@@ -74,7 +83,7 @@ func DistributeOrder(buttonPress chan elevio.ButtonEvent, elevOrderTx chan colle
 			*/
 
 		}
-	}
+	
 }
 
 func RedistributeFaultyElevOrders(elevOrderTx chan collector.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, faultyElev *elevator.Elevator) {
