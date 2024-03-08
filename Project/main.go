@@ -94,28 +94,21 @@ func main() {
 	go elevio.PollStopButton(drv_stop)
 
 	watchdog_floors := make(chan int)
-	redistributeSignal := make(chan bool)
 
 	go elevio.PollFloorSensor(watchdog_floors)
-	go watchdog.LocalWatchdog(watchdog_floors, &elev, redistributeSignal)
+	go watchdog.LocalWatchdog(watchdog_floors, &elev, elevOrderTx, elevStateRx, &elevators)
 	go watchdog.NetworkWatchdog(peerUpdateCh, &elevators, &recoveryElevators)
 
 	go collector.CollectStates(elevStateRx, &elevators)
 	go distributor.DistributeState(elevStateTx, &elev)
-	go distributor.RedistributeFaultyElevOrders(elevOrderTx, &elevators, &elev, redistributeSignal)
+	go distributor.DistributeOrder(drv_buttons, elevOrderTx, elevStateRx2,&elevators, &elev)
 
-	go fsm.Fsm_server(elevStateRx2, elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstruction, drv_stop, &elev, &elevators)
+
+	go fsm.Fsm_server(elevStateRx2, elevOrderRx, drv_floors, drv_obstruction, drv_stop, &elev, &elevators)
 
 	//i := cost_function.TimeToIdle(elev)
 	//fmt.Printf("\nTime to idle: %d\n", i)
 
 	select {
-	/*
-		case p := <-peerUpdateCh:
-			fmt.Printf("Peer update:\n")
-			fmt.Printf("  Peers:    %q\n", p.Peers)
-			fmt.Printf("  New:      %q\n", p.New)
-			fmt.Printf("  Lost:     %q\n", p.Lost)
-	*/
 	}
 }

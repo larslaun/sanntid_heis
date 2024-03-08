@@ -2,7 +2,6 @@ package fsm
 
 import (
 	"Elev-project/collector"
-	"Elev-project/distributor"
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
 	"Elev-project/driver-go-master/requests"
@@ -18,32 +17,24 @@ func Fsm_onInitBetweenFloors(elev *elevator.Elevator) {
 	elev.Behaviour = elevator.EB_Moving
 }
 
-func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.ElevatorOrder, elevOrderTx chan collector.ElevatorOrder, buttons chan elevio.ButtonEvent, floors chan int, obstruction chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
+func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.ElevatorOrder, floors chan int, obstruction chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
 
 	for {
 
 		//elevator.Elevator_print(*elev)
 		select {
 
-		case <-elevStateRx:
+		case receivedElev := <-elevStateRx:
 			SetHallLights(elevators)
+			if elev.ID == receivedElev.ID{
+				SetCabLights(receivedElev)
+			}
 
 		case a := <-elevOrderRx:
-			if a.RecipientID == elev.ID {
-				fmt.Print("Received new order: ")
-				fmt.Printf("%+v\n", a.Order)
-				Fsm_onRequestButtonPress(a.Order, elev)
-			}
-
-		case buttonPress := <-buttons:
-			if buttonPress.Button == elevio.BT_Cab {
-				fmt.Print("Recieved new cab order: ")
-				fmt.Printf("%+v\n", buttonPress)
-				Fsm_onRequestButtonPress(buttonPress, elev)
-			} else {
-				distributor.DistributeOrder(buttonPress, elevOrderTx, elevators)
-			}
-
+			fmt.Print("Received new order: ")
+			fmt.Printf("%+v\n", a.Order)
+			Fsm_onRequestButtonPress(a.Order, elev)
+		
 		case a := <-floors:
 			//fmt.Printf("%+v\n", a)
 			Fsm_onFloorArrival(a, elev)
@@ -53,7 +44,7 @@ func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.E
 			elev.Obstruction = a
 
 			//While the obstruction  is true, onFloorArrival should continue to run, holding the door open. 
-			for elev.obstruction {
+			for elev.Obstruction {
 				Fsm_onFloorArrival(elev.Floor, elev)
 			}
 			
@@ -75,8 +66,7 @@ func Fsm_onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevato
 	switch elev.Behaviour {
 	case elevator.EB_DoorOpen:
 		if requests.RequestsShouldClearImmediately(*elev, buttons.Floor, buttons.Button) {
-
-			time.AfterFunc(setting.DoorOpenDuration, func() { onDoorTimeout(elev) })
+			time.AfterFunc(settings.DoorOpenDuration, func() { onDoorTimeout(elev) })
 
 		} else {
 			elev.Requests[buttons.Floor][buttons.Button] = true

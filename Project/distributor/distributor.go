@@ -22,14 +22,14 @@ func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Ele
 //psuedo distributor
 //Receives buttonpress, then calculates optimal elevator wiht cost func,then sends elevOrder which includes order and ID of elev.
 
-func DistributeOrder(buttonPress chan elevio.ButtonEvent, elevOrderTx chan collector.ElevatorOrder, elevOrderRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
+func DistributeOrder(buttonPress chan elevio.ButtonEvent, elevOrderTx chan collector.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, localElev *elevator.Elevator) {
 	for {
 		select {
 		case buttonPress := <-buttonPress:
 			elevOrder := hallAssigner.ChooseOptimalElev(buttonPress, elevators)
 
 			if buttonPress.Button == elevio.BT_Cab {
-				elevOrder.RecipientID = localID
+				elevOrder.RecipientID = localElev.ID
 			}
 			elevOrderTx <- elevOrder
 
@@ -37,14 +37,17 @@ func DistributeOrder(buttonPress chan elevio.ButtonEvent, elevOrderTx chan colle
 
 			for {
 				select {
-				case recievedState := <-elevOrderRx:
+				case recievedState := <-elevStateRx:
 					if recievedState.ID == elevOrder.RecipientID {
+						fmt.Print("1")
 						if recievedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button] {
+							fmt.Print("2")
 							return
 						}
 					}
-				case <-time.After(time.Millisecond * 50):
+				case <-time.After(time.Millisecond * 500):
 					transmissionFailures++
+					fmt.Print("3")
 
 					if transmissionFailures >= settings.MaxTransmissionFailures {
 
@@ -54,7 +57,7 @@ func DistributeOrder(buttonPress chan elevio.ButtonEvent, elevOrderTx chan colle
 						elevOrder = hallAssigner.ChooseOptimalElev(buttonPress, elevators)
 
 						if buttonPress.Button == elevio.BT_Cab {
-							elevOrder.RecipientID = localID
+							elevOrder.RecipientID = localElev.ID
 							elevators[RecieverID].Available = true
 						}
 						elevOrderTx <- elevOrder
@@ -74,19 +77,15 @@ func DistributeOrder(buttonPress chan elevio.ButtonEvent, elevOrderTx chan colle
 	}
 }
 
-func RedistributeFaultyElevOrders(elevOrderTx chan collector.ElevatorOrder, elevators *[settings.NumElevs]elevator.Elevator, faultyElev *elevator.Elevator, redistributeSignal chan bool) {
-	for {
-		select {
-		case <-redistributeSignal:
-			fmt.Print("\nRedistribute initiated\n")
-			for floor := 0; floor < elevator.N_FLOORS; floor++ {
-				for btn := elevio.BT_HallUp; btn < elevio.BT_Cab; btn++ {
-					if faultyElev.Requests[floor][btn] {
-						var hallCall elevio.ButtonEvent = elevio.ButtonEvent{Floor: floor, Button: btn}
-						DistributeOrder(hallCall, elevOrderTx, elevators)
-						faultyElev.Requests[floor][btn] = false
-					}
-				}
+func RedistributeFaultyElevOrders(elevOrderTx chan collector.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, faultyElev *elevator.Elevator) {
+	fmt.Print("\nRedistribute initiated\n")
+	for floor := 0; floor < elevator.N_FLOORS; floor++ {
+		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab; btn++ {
+			if faultyElev.Requests[floor][btn] {
+				hallCall := make(chan elevio.ButtonEvent)
+				hallCall <- elevio.ButtonEvent{Floor: floor, Button: btn}
+				DistributeOrder(hallCall, elevOrderTx, elevStateRx, elevators, faultyElev)
+				faultyElev.Requests[floor][btn] = false
 			}
 		}
 	}
