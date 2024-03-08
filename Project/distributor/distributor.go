@@ -23,7 +23,10 @@ func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Ele
 //Receives buttonpress, then calculates optimal elevator wiht cost func,then sends elevOrder which includes order and ID of elev.
 
 func DistributeOrder(buttonPress chan elevio.ButtonEvent, elevOrderTx chan collector.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, localElev *elevator.Elevator) {
-		select {
+	for{
+	
+	pollButtons:
+	select {
 		case buttonPress := <-buttonPress:
 			elevOrder := hallAssigner.ChooseOptimalElev(buttonPress, elevators)
 			
@@ -51,7 +54,7 @@ func DistributeOrder(buttonPress chan elevio.ButtonEvent, elevOrderTx chan colle
 						fmt.Print(recievedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button])
 						if recievedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button] {
 							fmt.Print("2")
-							return
+							break pollButtons
 						}
 					}
 				case <- sendNewMsg.C:
@@ -83,7 +86,7 @@ func DistributeOrder(buttonPress chan elevio.ButtonEvent, elevOrderTx chan colle
 			*/
 
 		}
-	
+	}
 }
 
 func RedistributeFaultyElevOrders(elevOrderTx chan collector.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, faultyElev *elevator.Elevator) {
