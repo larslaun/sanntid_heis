@@ -98,6 +98,8 @@ func Fsm_onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevato
 	//elevator.Elevator_print(*elev)
 }
 
+
+
 func Fsm_onFloorArrival(newFloor int, elev *elevator.Elevator) {
 
 	//elevator.Elevator_print(*elev)
@@ -119,11 +121,13 @@ func Fsm_onFloorArrival(newFloor int, elev *elevator.Elevator) {
 			elev.Behaviour = elevator.EB_DoorOpen
 
 		}
+	case elevator.EB_DoorOpen:
+		elevio.SetDoorOpenLamp(true)
+		time.AfterFunc(settings.DoorOpenDuration, func() { onDoorTimeout(elev) })
 	}
-	//print("\nNew state:\n")
-	//elevator.Elevator_print(*elev)
-
 }
+
+
 
 func SetCabLights(elev elevator.Elevator) {
 	for floor := 0; floor < elevator.N_FLOORS; floor++ {
