@@ -42,6 +42,8 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, elevators *[settings.Nu
 
 			newElev, _ := strconv.Atoi(peers.New)
 			elevators[newElev].Available = true
+
+			
 			
 			//fmt.Print("\nNew elevator:\n")
 			//elevator.Elevator_print(elevators[newElev])
