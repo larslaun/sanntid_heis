@@ -84,12 +84,12 @@ func main() {
 
 	drv_buttons := make(chan elevio.ButtonEvent)
 	drv_floors := make(chan int)
-	drv_obstr := make(chan bool)
+	drv_obstruction := make(chan bool)
 	drv_stop := make(chan bool)
 
 	go elevio.PollButtons(drv_buttons)
 	go elevio.PollFloorSensor(drv_floors)
-	go elevio.PollObstructionSwitch(drv_obstr)
+	go elevio.PollObstructionSwitch(drv_obstruction)
 	go elevio.PollStopButton(drv_stop)
 
 	watchdog_floors := make(chan int)
@@ -103,7 +103,7 @@ func main() {
 	go distributor.DistributeState(elevStateTx, &elev)
 	go distributor.RedistributeFaultyElevOrders(elevOrderTx, &elevators, &elev, redistributeSignal)
 
-	go fsm.Fsm_server(elevStateRx2, elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstr, drv_stop, &elev, &elevators)
+	go fsm.Fsm_server(elevStateRx2, elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstruction, drv_stop, &elev, &elevators)
 
 	//i := cost_function.TimeToIdle(elev)
 	//fmt.Printf("\nTime to idle: %d\n", i)

@@ -13,7 +13,7 @@ import (
 )
 
 func LocalWatchdog(floors chan int, elev *elevator.Elevator, redistributeSignal chan bool) {
-	watchdogTimer := time.NewTimer(settings.WatchdogTimeoutDuration * time.Second)
+	watchdogTimer := time.NewTimer(settings.WatchdogTimeoutDuration)
 	for {
 		select {
 		case <-watchdogTimer.C:
@@ -21,10 +21,10 @@ func LocalWatchdog(floors chan int, elev *elevator.Elevator, redistributeSignal 
 				redistributeSignal <- true
 				elev.Available = false
 			} else {
-				watchdogTimer.Reset(settings.WatchdogTimeoutDuration * time.Second)
+				watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
 			}
 		case <-floors:
-			watchdogTimer.Reset(settings.WatchdogTimeoutDuration * time.Second)
+			watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
 			elev.Available = true
 		}
 	}
