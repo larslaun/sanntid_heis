@@ -6,8 +6,6 @@ import (
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/settings"
 	"Elev-project/watchdog"
-	"fmt"
-
 	"Elev-project/Network-go-master/network/bcast"
 	"Elev-project/Network-go-master/network/peers"
 
@@ -24,8 +22,6 @@ import (
 )
 
 func main() {
-	fmt.Print("test")
-
 	// Our id can be anything. Here we pass it on the command line, using
 	//  `go run main.go -id=our_id`
 
@@ -48,17 +44,17 @@ func main() {
 
 	elevStateTx := make(chan elevator.Elevator)
 	elevStateRx := make(chan elevator.Elevator)
-	go bcast.Transmitter(20008, elevStateTx)
-	go bcast.Receiver(20008, elevStateRx)
+	go bcast.Transmitter(20010, elevStateTx)
+	go bcast.Receiver(20010, elevStateRx)
 
 	elevStateRx2 := make(chan elevator.Elevator)
-	go bcast.Receiver(20008, elevStateRx2)
+	go bcast.Receiver(20010, elevStateRx2)
 
 	//Må finne ut at av hvilke porter som kan brukes
 	elevOrderTx := make(chan collector.ElevatorOrder)
 	elevOrderRx := make(chan collector.ElevatorOrder)
-	go bcast.Transmitter(21008, elevOrderTx)
-	go bcast.Receiver(21008, elevOrderRx)
+	go bcast.Transmitter(21010, elevOrderTx)
+	go bcast.Receiver(21010, elevOrderRx)
 
 	var elev elevator.Elevator
 	//This is where process pairs were
@@ -82,22 +78,22 @@ func main() {
 
 	watchdog_floors := make(chan int)
 	watchdog_elevOrderTx := make(chan collector.ElevatorOrder)
-	go bcast.Transmitter(21008, watchdog_elevOrderTx)
+	go bcast.Transmitter(21010, watchdog_elevOrderTx)
 
 	watchdog_elevStateRx := make(chan elevator.Elevator)
-	go bcast.Receiver(20008, watchdog_elevStateRx)
+	go bcast.Receiver(20010, watchdog_elevStateRx)
 
 	
 
 	go elevio.PollFloorSensor(watchdog_floors)
-	go watchdog.LocalWatchdog(watchdog_floors, &elev, watchdog_elevOrderTx, watchdog_elevStateRx, &elevators, drv_buttons)
-	go watchdog.NetworkWatchdog(peerUpdateCh, &elevators, &recoveryElevators, watchdog_elevOrderTx, watchdog_elevStateRx, drv_buttons)
+	go watchdog.LocalWatchdog(watchdog_floors, &elev, watchdog_elevOrderTx, watchdog_elevStateRx, &elevators)
+	go watchdog.NetworkWatchdog(peerUpdateCh, &elev, &elevators, &recoveryElevators, watchdog_elevOrderTx, watchdog_elevStateRx)
 
 	go collector.CollectStates(elevStateRx, &elevators)
 	go distributor.DistributeState(elevStateTx, &elev)
-	go distributor.DistributeOrder(drv_buttons, elevOrderTx, elevStateRx2, &elevators, &elev)
+	
 
-	go fsm.Fsm_server(elevStateRx2, elevOrderRx, drv_floors, drv_obstruction, drv_stop, &elev, &elevators)
+	go fsm.Fsm_server(elevStateRx2, elevOrderRx, elevOrderTx, drv_buttons,drv_floors, drv_obstruction, drv_stop, &elev, &elevators)
 
 	//i := cost_function.TimeToIdle(elev)
 	//fmt.Printf("\nTime to idle: %d\n", i)

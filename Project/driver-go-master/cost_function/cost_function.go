@@ -4,7 +4,7 @@ import (
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
 	"Elev-project/driver-go-master/requests"
-	"fmt"
+	//"fmt"
 )
 
 const DOOROPENTIME = 3
@@ -19,14 +19,14 @@ func TimeToIdle(elevSim elevator.Elevator) int {
 	var Duration int = 0
 
 	ClearForSafety(&elevSim, &Duration)
-	fmt.Printf("\ncost print 1: %d\n", Duration)
+	//fmt.Printf("\ncost print 1: %d\n", Duration)
 
 	switch elevSim.Behaviour {
 	case elevator.EB_Idle:
 		elevSim.Dirn = requests.RequestsChooseDirection(elevSim).Dirn
 		if elevSim.Dirn == elevio.MD_Stop {
-			fmt.Printf("\nElevator ID "+elevSim.ID+" calculated duration1: %d\n", Duration)
-			elevator.Elevator_print(elevSim)
+			//fmt.Printf("\nElevator ID "+elevSim.ID+" calculated duration1: %d\n", Duration)
+			//elevator.Elevator_print(elevSim)
 			return Duration
 		}
 	case elevator.EB_Moving:
@@ -43,8 +43,8 @@ func TimeToIdle(elevSim elevator.Elevator) int {
 			Duration += DOOROPENTIME
 			elevSim.Dirn = requests.RequestsChooseDirection(elevSim).Dirn
 			if elevSim.Dirn == elevio.MD_Stop {
-				fmt.Printf("\nElevator ID "+elevSim.ID+" calculated duration2: %d\n", Duration)
-				elevator.Elevator_print(elevSim)
+				//fmt.Printf("\nElevator ID "+elevSim.ID+" calculated duration2: %d\n", Duration)
+				//elevator.Elevator_print(elevSim)
 				return Duration
 			}
 		}

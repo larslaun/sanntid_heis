@@ -42,22 +42,3 @@ func CollectStates(elevStateRx chan elevator.Elevator, elevators *[settings.NumE
 
 
 
-
-//Function for collecting orders broadcasted
-//Orders are stored to reciever elevators state.
-//Should only recipient store order??
-
-//Maybe scrap this function and handle in fsm instead, then we can use already made Fsm_onRequestButtonPress function
-/*
-func CollectOrders(elevOrderRx chan ElevatorOrder, elevators *[settings.NumElevs]elevator.Elevator){
-	for{
-		select{
-		case newOrder := <-elevOrderRx:
-			fmt.Print("Recieved new order")
-			RecipientID, _ := strconv.Atoi(newOrder.RecipientID)
-			elevators[RecipientID].Requests[newOrder.Floor][newOrder.Button] = true
-		}
-	}
-
-}
-*/
