@@ -6,6 +6,7 @@ import (
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/settings"
 	"Elev-project/watchdog"
+	"fmt"
 
 	"Elev-project/Network-go-master/network/bcast"
 	"Elev-project/Network-go-master/network/peers"
@@ -23,6 +24,7 @@ import (
 )
 
 func main() {
+	fmt.Print("test")
 
 	// Our id can be anything. Here we pass it on the command line, using
 	//  `go run main.go -id=our_id`
