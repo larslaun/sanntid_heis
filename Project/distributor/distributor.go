@@ -44,7 +44,7 @@ func DistributeOrder(buttonPress chan elevio.ButtonEvent, elevOrderTx chan colle
 
 			transmissionFailures := 0
 
-			sendNewMsg := time.NewTimer(time.Millisecond * 200)
+			//sendNewMsg := time.NewTimer(time.Millisecond * 200)
 
 			for {
 				select {
@@ -52,12 +52,14 @@ func DistributeOrder(buttonPress chan elevio.ButtonEvent, elevOrderTx chan colle
 					if recievedState.ID == elevOrder.RecipientID {
 						fmt.Print("1")
 						fmt.Print(recievedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button])
-						if recievedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button] {
+						if recievedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button] || recievedState.Floor == elevOrder.Order.Floor {
 							fmt.Print("2")
 							break pollButtons
 						}
 					}
-				case <- sendNewMsg.C:
+				
+				//case <- sendNewMsg.C:
+				case <-time.After(time.Second * 2):
 					transmissionFailures++
 					fmt.Print("3")
 
@@ -89,16 +91,28 @@ func DistributeOrder(buttonPress chan elevio.ButtonEvent, elevOrderTx chan colle
 	}
 }
 
-func RedistributeFaultyElevOrders(elevOrderTx chan collector.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, faultyElev *elevator.Elevator) {
+func RedistributeFaultyElevOrders(elevOrderTx chan collector.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, faultyElev *elevator.Elevator, buttonPress chan elevio.ButtonEvent) {
 	fmt.Print("\nRedistribute initiated\n")
 	for floor := 0; floor < elevator.N_FLOORS; floor++ {
 		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab; btn++ {
 			if faultyElev.Requests[floor][btn] {
-				hallCall := make(chan elevio.ButtonEvent)
-				hallCall <- elevio.ButtonEvent{Floor: floor, Button: btn}
-				DistributeOrder(hallCall, elevOrderTx, elevStateRx, elevators, faultyElev)
+				//hallCall := make(chan elevio.ButtonEvent)
+				buttonPress <- elevio.ButtonEvent{Floor: floor, Button: btn}
+				//DistributeOrder(hallCall, elevOrderTx, elevStateRx, elevators, faultyElev)
 				faultyElev.Requests[floor][btn] = false
 			}
 		}
 	}
+}
+
+func RecoverCabOrders(elevOrderTx chan collector.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, faultyElev *elevator.Elevator, buttonPress chan elevio.ButtonEvent) {
+	fmt.Print("\nCab recovery initiated\n")
+	for floor := 0; floor < elevator.N_FLOORS; floor++ {
+			if faultyElev.Requests[floor][elevio.BT_Cab] {
+				//hallCall := make(chan elevio.ButtonEvent)
+				buttonPress <- elevio.ButtonEvent{Floor: floor, Button: elevio.BT_Cab}
+				//DistributeOrder(hallCall, elevOrderTx, elevStateRx, elevators, faultyElev)
+				faultyElev.Requests[floor][elevio.BT_Cab] = false
+			}
+		}
 }

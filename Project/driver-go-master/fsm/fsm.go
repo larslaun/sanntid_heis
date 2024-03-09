@@ -37,7 +37,10 @@ func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.E
 			fmt.Printf("%+v\n", a.Order)
 			Fsm_onRequestButtonPress(a.Order, elev)
 			}
-		
+
+		//legg inn dette igjen og kall på distribute order funksjon her, da kan den også brukes enklere til redistribute og cab calls
+		//case a := <-buttons
+
 		case a := <-floors:
 			//fmt.Printf("%+v\n", a)
 			Fsm_onFloorArrival(a, elev)
