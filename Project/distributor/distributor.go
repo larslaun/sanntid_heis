@@ -15,7 +15,7 @@ func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Ele
 	for {
 		//localElev.Available = true
 		elevStateTx <- *localElev
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(20 * time.Millisecond)
 	}
 }
 
@@ -24,7 +24,7 @@ func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Ele
 
 func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan collector.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, localElev *elevator.Elevator) {
 
-	elevOrder := hallAssigner.ChooseOptimalElev(buttonPress, elevators)
+	elevOrder := hallAssigner.ChooseOptimalElev(buttonPress, *elevators)
 
 	//elevator.Elevator_print(*localElev)
 
@@ -46,24 +46,27 @@ func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan collector.
 		select {
 		case recievedState := <-elevStateRx:
 			if recievedState.ID == elevOrder.RecipientID {
-				fmt.Print("1")
-				fmt.Print(recievedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button])
+				//fmt.Print("1")
+				//fmt.Print(recievedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button])
 				if recievedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button] || recievedState.Floor == elevOrder.Order.Floor {
-					fmt.Print("2")
+					//fmt.Print("2")
+					fmt.Print("CORRECT state recieved\n")
 					return
-				}
+				}else{
+					fmt.Print("Wrong state recieved\n")
+			} 
 			}
 
-		case <-time.After(time.Millisecond * 200):
+		case <-time.After(time.Millisecond * 20):
 			transmissionFailures++
-			fmt.Print("3")
+			fmt.Printf("Transmission failures: %d\n", transmissionFailures)
 
 			if transmissionFailures >= settings.MaxTransmissionFailures {
 
 				RecieverID, _ := strconv.Atoi(elevOrder.RecipientID)
 				elevators[RecieverID].Available = false
 
-				elevOrder = hallAssigner.ChooseOptimalElev(buttonPress, elevators)
+				elevOrder = hallAssigner.ChooseOptimalElev(buttonPress, *elevators)
 
 				if buttonPress.Button == elevio.BT_Cab {
 					elevOrder.RecipientID = localElev.ID

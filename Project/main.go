@@ -87,7 +87,7 @@ func main() {
 
 	go elevio.PollFloorSensor(watchdog_floors)
 	go watchdog.LocalWatchdog(watchdog_floors, &elev, watchdog_elevOrderTx, watchdog_elevStateRx, &elevators)
-	go watchdog.NetworkWatchdog(peerUpdateCh, &elev,&elevators, &recoveryElevators, watchdog_elevOrderTx, watchdog_elevStateRx)
+	go watchdog.NetworkWatchdog(peerUpdateCh, &elev, &elevators, &recoveryElevators, watchdog_elevOrderTx, watchdog_elevStateRx)
 
 	go collector.CollectStates(elevStateRx, &elevators)
 	go distributor.DistributeState(elevStateTx, &elev)
