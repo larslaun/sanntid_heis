@@ -2,6 +2,7 @@ package fsm
 
 import (
 	"Elev-project/collector"
+	"Elev-project/distributor"
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
 	"Elev-project/driver-go-master/requests"
@@ -17,7 +18,7 @@ func Fsm_onInitBetweenFloors(elev *elevator.Elevator) {
 	elev.Behaviour = elevator.EB_Moving
 }
 
-func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.ElevatorOrder, floors chan int, obstruction chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
+func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.ElevatorOrder, elevOrderTx chan collector.ElevatorOrder,buttons chan elevio.ButtonEvent, floors chan int, obstruction chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
 
 	for {
 
@@ -39,7 +40,10 @@ func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.E
 			}
 
 		//legg inn dette igjen og kall på distribute order funksjon her, da kan den også brukes enklere til redistribute og cab calls
-		//case a := <-buttons
+		case a := <-buttons:
+			go distributor.DistributeOrder(a, elevOrderTx, elevStateRx, elevators, elev)
+
+
 
 		case a := <-floors:
 			//fmt.Printf("%+v\n", a)
