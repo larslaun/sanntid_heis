@@ -59,6 +59,7 @@ func main() {
 	go bcast.Transmitter(21010, elevOrderTx)
 	go bcast.Receiver(21010, elevOrderRx)
 
+
 	var elev elevator.Elevator
 	//This is where process pairs were
 	elevio.Init("localhost:"+elevPort, settings.NumFloors)
@@ -89,11 +90,11 @@ func main() {
 	
 
 	go elevio.PollFloorSensor(watchdog_floors)
-	go watchdog.LocalWatchdog(watchdog_floors, &elev, watchdog_elevOrderTx, watchdog_elevStateRx, &elevators)
-	go watchdog.NetworkWatchdog(peerUpdateCh, &elev, &elevators, &recoveryElevators, watchdog_elevOrderTx, watchdog_elevStateRx)
+	go watchdog.LocalWatchdog(watchdog_floors, &elev, watchdog_elevOrderTx, elevOrderRx,watchdog_elevStateRx, &elevators)
+	go watchdog.NetworkWatchdog(peerUpdateCh, &elev, &elevators, &recoveryElevators, watchdog_elevOrderTx, elevOrderRx,watchdog_elevStateRx)
 
 	go collector.CollectStates(elevStateRx, &elevators)
-	go distributor.DistributeState(elevStateTx, &elev)
+	go distributor.DistributeState(elevStateTx, elevStateRx,&elev)
 	
 
 	go fsm.Fsm_server(elevStateRx2, elevOrderRx, elevOrderTx, drv_buttons,drv_floors, drv_obstruction, drv_stop, &elev, &elevators)

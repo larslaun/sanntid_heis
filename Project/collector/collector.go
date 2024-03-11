@@ -3,10 +3,12 @@ package collector
 import (
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
+	
+
 	//"fmt"
 	//"Elev-project/driver-go-master/fsm"
-	"strconv"
 	"Elev-project/settings"
+	"strconv"
 )
 
 
