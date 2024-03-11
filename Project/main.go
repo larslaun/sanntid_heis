@@ -1,13 +1,14 @@
 package main
 
 import (
+	"Elev-project/Network-go-master/network/bcast"
+	"Elev-project/Network-go-master/network/peers"
 	"Elev-project/collector"
 	"Elev-project/distributor"
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/settings"
 	"Elev-project/watchdog"
-	"Elev-project/Network-go-master/network/bcast"
-	"Elev-project/Network-go-master/network/peers"
+	"fmt"
 
 	//"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
@@ -24,6 +25,8 @@ import (
 func main() {
 	// Our id can be anything. Here we pass it on the command line, using
 	//  `go run main.go -id=our_id`
+
+	fmt.Print("test")
 
 	var elevPort string
 	var id string
