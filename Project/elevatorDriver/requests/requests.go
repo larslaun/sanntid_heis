@@ -1,8 +1,9 @@
 package requests
 
 import (
-	"Elev-project/driver-go-master/elevator"
-	"Elev-project/driver-go-master/elevio"
+	"Elev-project/elevatorDriver/elevator"
+	"Elev-project/elevatorDriver/elevio"
+	"Elev-project/settings"
 )
 
 
@@ -14,8 +15,8 @@ type DirnBehaviourPair struct {
 // checks if there are any requests for the elevator above it's current floor
 // by incrementing through each element in the "boolean" requests matrix.
 func RequestsAbove(elev elevator.Elevator) bool {
-	for f := elev.Floor + 1; f < elevator.N_FLOORS; f++ {
-		for btn := 0; btn < elevator.N_BUTTONS; btn++ {  //må btn loop endres til å iterere gjennom enum, ref
+	for f := elev.Floor + 1; f < settings.N_FLOORS; f++ {
+		for btn := 0; btn < settings.N_BUTTONS; btn++ {  //må btn loop endres til å iterere gjennom enum, ref
 			if elev.Requests[f][btn] { //la til ==1 på disse NOT. fjernet igjen pga. endret request til bool
 				return true
 			}
@@ -27,7 +28,7 @@ func RequestsAbove(elev elevator.Elevator) bool {
 // checks if there are any requests for the elevator below it's current floor.
 func RequestsBelow(elev elevator.Elevator) bool {
 	for f := 0; f < elev.Floor; f++ {
-		for btn := 0; btn < elevator.N_BUTTONS; btn++ {
+		for btn := 0; btn < settings.N_BUTTONS; btn++ {
 			if elev.Requests[f][btn] {
 				return true
 			}
@@ -38,7 +39,7 @@ func RequestsBelow(elev elevator.Elevator) bool {
 
 // checks if there are any requests for the elevator at it's current floor
 func RequestsHere(elev elevator.Elevator) bool {
-	for btn := 0; btn < elevator.N_BUTTONS; btn++ {
+	for btn := 0; btn < settings.N_BUTTONS; btn++ {
 		if elev.Requests[elev.Floor][btn] {
 			return true
 		}

@@ -1,7 +1,7 @@
 package collector
 
 import (
-	"Elev-project/driver-go-master/elevator"
+	"Elev-project/elevatorDriver/elevator"
 	"Elev-project/settings"
 	"strconv"
 )

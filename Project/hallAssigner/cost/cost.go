@@ -1,9 +1,9 @@
 package cost
 
 import (
-	"Elev-project/driver-go-master/elevator"
-	"Elev-project/driver-go-master/elevio"
-	"Elev-project/driver-go-master/requests"
+	"Elev-project/elevatorDriver/elevator"
+	"Elev-project/elevatorDriver/elevio"
+	"Elev-project/elevatorDriver/requests"
 	"Elev-project/settings"
 )
 
@@ -65,7 +65,7 @@ func CostClearAtCurrentFloor(elevOld elevator.Elevator) elevator.Elevator {
 // Clears all requests on the elevators current floor, and adds one DOOROPENTIME to the estimated runtime. Takes two pointers
 // Elevator e and the cost as arguments.
 func ClearForSafety(e *elevator.Elevator, cost *int) {
-	for floor := 0; floor < elevator.N_FLOORS; floor++ {
+	for floor := 0; floor < settings.N_FLOORS; floor++ {
 		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++ {
 			if requests.RequestsShouldClearImmediately(*e, floor, btn) && (e.Requests[floor][btn]) {
 				e.Requests[floor][btn] = false

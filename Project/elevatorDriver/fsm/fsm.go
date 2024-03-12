@@ -2,9 +2,9 @@ package fsm
 
 import (
 	"Elev-project/communicationHandler/distributor"
-	"Elev-project/driver-go-master/elevator"
-	"Elev-project/driver-go-master/elevio"
-	"Elev-project/driver-go-master/requests"
+	"Elev-project/elevatorDriver/elevator"
+	"Elev-project/elevatorDriver/elevio"
+	"Elev-project/elevatorDriver/requests"
 	"Elev-project/settings"
 	"fmt"
 	"time"
@@ -17,23 +17,10 @@ func Fsm_onInitBetweenFloors(elev *elevator.Elevator) {
 }
 
 func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.ElevatorOrder, elevOrderTx chan elevator.ElevatorOrder, buttons chan elevio.ButtonEvent, floors chan int, obstruction chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
-	//localID, _ := strconv.Atoi(elev.ID)
-	
 	go updateLights(elevators, elev)
 
 	for {
-
-		//elevator.Elevator_print(*elev)
 		select {
-
-		/*
-		case receivedElev := <-elevStateRx:
-			SetHallLights(elevators, elev)
-			if elev.ID == receivedElev.ID {
-				SetCabLights(receivedElev)
-			}
-		*/
-
 		case a := <-elevOrderRx:
 			if a.RecipientID == elev.ID {
 				fmt.Print("Received new order: ")
@@ -43,7 +30,7 @@ func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.El
 
 		//legg inn dette igjen og kall på distribute order funksjon her, da kan den også brukes enklere til redistribute og cab calls
 		case a := <-buttons:
-			go distributor.DistributeOrder(a, elevOrderTx, elevOrderRx,elevStateRx, elevators, elev)
+			go distributor.DistributeOrder(a, elevOrderTx, elevOrderRx, elevStateRx, elevators, elev)
 			
 
 		case a := <-floors:
@@ -136,7 +123,7 @@ func Fsm_onFloorArrival(newFloor int, elev *elevator.Elevator) {
 }
 
 func SetCabLights(elev elevator.Elevator) {
-	for floor := 0; floor < elevator.N_FLOORS; floor++ {
+	for floor := 0; floor < settings.N_FLOORS; floor++ {
 		if elev.Requests[floor][elevio.BT_Cab] {
 			elevio.SetButtonLamp(elevio.BT_Cab, floor, true)
 		} else {
@@ -148,15 +135,15 @@ func SetCabLights(elev elevator.Elevator) {
 func SetHallLights(elevators *[settings.NumElevs]elevator.Elevator, localElev *elevator.Elevator) {
 	
 	//making a matrix with zeros
-	hallMatrix := make([][]bool, elevator.N_FLOORS)
+	hallMatrix := make([][]bool, settings.N_FLOORS)
 	for i := range hallMatrix {
-		hallMatrix[i] = make([]bool, elevator.N_BUTTONS-1) //only including hall-requests
+		hallMatrix[i] = make([]bool, settings.N_BUTTONS-1) //only including hall-requests
 	}
 
 	//Iterating through each Hall-request in every elevator's matrix and OR'ing with every element in the hallMatrix.
 	//This creates a "common" boolean matrix for hallCalls used to light every hall call button of the same type.
 	for id := 0; id < len(elevators); id++ {
-		for floor := 0; floor < elevator.N_FLOORS; floor++ {
+		for floor := 0; floor < settings.N_FLOORS; floor++ {
 			for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
 				hallMatrix[floor][btn] = hallMatrix[floor][btn] || elevators[id].Requests[floor][btn]
 			}
@@ -164,7 +151,7 @@ func SetHallLights(elevators *[settings.NumElevs]elevator.Elevator, localElev *e
 	}
 	
 	if localElev.Available == false{ //turn of hall calls from other elevators in case of network loss
-		for floor := 0; floor < elevator.N_FLOORS; floor++ {
+		for floor := 0; floor < settings.N_FLOORS; floor++ {
 			for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
 				hallMatrix[floor][btn] = localElev.Requests[floor][btn]
 			}
@@ -172,7 +159,7 @@ func SetHallLights(elevators *[settings.NumElevs]elevator.Elevator, localElev *e
 	}
 
 
-	for floor := 0; floor < elevator.N_FLOORS; floor++ {
+	for floor := 0; floor < settings.N_FLOORS; floor++ {
 		for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
 			if hallMatrix[floor][btn] {
 				elevio.SetButtonLamp(btn, floor, true)
@@ -226,7 +213,7 @@ func Elev_init(elev *elevator.Elevator, elevID string) {
 	Fsm_onInitBetweenFloors(elev)
 	//}
 	SetCabLights(*elev)
-	for floor := 0; floor < elevator.N_FLOORS; floor++ {
+	for floor := 0; floor < settings.N_FLOORS; floor++ {
 		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++ {
 			elevio.SetButtonLamp(btn, floor, false)
 		}

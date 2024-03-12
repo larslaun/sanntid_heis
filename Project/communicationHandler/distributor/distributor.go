@@ -1,8 +1,8 @@
 package distributor
 
 import (
-	"Elev-project/driver-go-master/elevator"
-	"Elev-project/driver-go-master/elevio"
+	"Elev-project/elevatorDriver/elevator"
+	"Elev-project/elevatorDriver/elevio"
 	"Elev-project/hallAssigner"
 	"Elev-project/settings"
 	"fmt"
@@ -20,8 +20,6 @@ func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Ele
 	}
 }
 
-//psuedo distributor
-//Receives buttonpress, then calculates optimal elevator wiht cost func,then sends elevOrder which includes order and ID of elev.
 
 func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, localElev *elevator.Elevator) {
 
@@ -95,7 +93,7 @@ func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan elevator.E
 
 func RedistributeFaultyElevOrders(elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, faultyElev *elevator.Elevator) {
 	fmt.Print("\nRedistribute initiated\n")
-	for floor := 0; floor < elevator.N_FLOORS; floor++ {
+	for floor := 0; floor < settings.N_FLOORS; floor++ {
 		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab; btn++ {
 			if faultyElev.Requests[floor][btn] {
 				hallCall := elevio.ButtonEvent{Floor: floor, Button: btn}
@@ -111,7 +109,7 @@ func RedistributeFaultyElevOrders(elevOrderTx chan elevator.ElevatorOrder, elevO
 
 func RecoverCabOrders(elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, faultyElev *elevator.Elevator) {
 	fmt.Print("\nCab recovery initiated\n")
-	for floor := 0; floor < elevator.N_FLOORS; floor++ {
+	for floor := 0; floor < settings.N_FLOORS; floor++ {
 		if faultyElev.Requests[floor][elevio.BT_Cab] {
 			hallCall := elevio.ButtonEvent{Floor: floor, Button: elevio.BT_Cab}
 			go DistributeOrder(hallCall, elevOrderTx, elevOrderRx, elevStateRx, elevators, faultyElev)

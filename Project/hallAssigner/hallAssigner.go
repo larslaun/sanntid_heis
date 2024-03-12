@@ -1,8 +1,8 @@
 package hallAssigner
 
 import (
-	"Elev-project/driver-go-master/elevator"
-	"Elev-project/driver-go-master/elevio"
+	"Elev-project/elevatorDriver/elevator"
+	"Elev-project/elevatorDriver/elevio"
 	"Elev-project/hallAssigner/cost"
 	"Elev-project/settings"
 	"strconv"

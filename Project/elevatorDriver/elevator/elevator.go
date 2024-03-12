@@ -1,7 +1,7 @@
 package elevator
 
 import (
-	"Elev-project/driver-go-master/elevio"
+	"Elev-project/elevatorDriver/elevio"
 	"Elev-project/settings"
 	"fmt"
 	"strconv"

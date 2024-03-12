@@ -1,24 +1,17 @@
 package main
 
 import (
-	"Elev-project/Network-go-master/network/bcast"
-	"Elev-project/Network-go-master/network/peers"
+	"Elev-project/networkDriver/network/bcast"
+	"Elev-project/networkDriver/network/peers"
 	"Elev-project/communicationHandler/collector"
 	"Elev-project/communicationHandler/distributor"
-	"Elev-project/driver-go-master/elevator"
+	"Elev-project/elevatorDriver/elevator"
 	"Elev-project/settings"
 	"Elev-project/watchdog"
-
-	//"Elev-project/driver-go-master/elevator"
-	"Elev-project/driver-go-master/elevio"
-	"Elev-project/driver-go-master/fsm"
-
-	//"Elev-project/driver-go-master/cost_function"
-
-	//"fmt"
+	"Elev-project/elevatorDriver/elevio"
+	"Elev-project/elevatorDriver/fsm"
 	"os"
-	//"os/exec"
-	//"time"
+	
 )
 
 func main() {
@@ -60,8 +53,8 @@ func main() {
 	//This is where process pairs were
 	elevio.Init("localhost:"+elevPort, settings.N_FLOORS)
 	fsm.Elev_init(&elev, id)
-	elevators := collector.ElevatorsInit()
-	recoveryElevators := collector.ElevatorsInit()
+	elevators := elevator.ElevatorsInit()
+	recoveryElevators := elevator.ElevatorsInit()
 	for i := 0; i < settings.NumElevs; i++ {
 		elevator.Elevator_print(elevators[i])
 	}
