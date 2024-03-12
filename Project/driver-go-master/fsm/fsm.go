@@ -165,7 +165,7 @@ func SetHallLights(elevators *[settings.NumElevs]elevator.Elevator) {
 			}
 		}
 	}
-
+	
 	//Setting the lights using the bools in hallMatrix.
 	for floor := 0; floor < elevator.N_FLOORS; floor++ {
 		for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {

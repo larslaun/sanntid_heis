@@ -44,16 +44,16 @@ func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan collector.
 
 	for {
 		select {
-		case recievedState := <-elevStateRx:
-			if recievedState.ID == elevOrder.RecipientID {
+		case receivedState := <-elevStateRx:
+			if receivedState.ID == elevOrder.RecipientID {
 				//fmt.Print("1")
-				//fmt.Print(recievedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button])
-				if recievedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button] || recievedState.Floor == elevOrder.Order.Floor {
+				//fmt.Print(receivedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button])
+				if receivedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button] || receivedState.Floor == elevOrder.Order.Floor {
 					//fmt.Print("2")
-					fmt.Print("CORRECT state recieved\n")
+					fmt.Print("CORRECT state received\n")
 					return
 				}else{
-					fmt.Print("Wrong state recieved\n")
+					fmt.Print("Wrong state received\n")
 			} 
 			}
 
@@ -63,14 +63,14 @@ func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan collector.
 
 			if transmissionFailures >= settings.MaxTransmissionFailures {
 
-				RecieverID, _ := strconv.Atoi(elevOrder.RecipientID)
+				ReceiverID, _ := strconv.Atoi(elevOrder.RecipientID)
 				elevators[RecieverID].Available = false
 
 				elevOrder = hallAssigner.ChooseOptimalElev(buttonPress, *elevators)
 
 				if buttonPress.Button == elevio.BT_Cab {
 					elevOrder.RecipientID = localElev.ID
-					elevators[RecieverID].Available = true
+					elevators[ReceiverID].Available = true
 				}
 				transmissionFailures = 0
 			}
