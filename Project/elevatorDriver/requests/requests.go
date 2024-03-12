@@ -49,7 +49,14 @@ func RequestsHere(elev elevator.Elevator) bool {
 
 //checks if the request matrix for an elevator is empty
 func HasRequests(elev elevator.Elevator) bool {
-	return (RequestsBelow(elev) || RequestsAbove(elev) || RequestsHere(elev))
+	for floor:=0; floor<settings.N_FLOORS; floor++{
+		for btn := 0; btn < settings.N_BUTTONS; btn++ {
+			if elev.Requests[floor][btn] {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 //decides wether the elevator should move up, stop og move down based on if there are any requests for the elevator.

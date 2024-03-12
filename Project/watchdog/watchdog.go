@@ -18,6 +18,7 @@ func LocalWatchdog(floors chan int, elev *elevator.Elevator, elevOrderTx chan el
 		select {
 		case <-watchdogTimer.C:
 			if requests.HasRequests(*elev) {
+				fmt.Print("\nWatchdog fired\n")
 				elev.Available = false
 				distributor.RedistributeFaultyElevOrders(elevOrderTx, elevOrderRx, elevStateRx, elevators, elev)
 			} else {
@@ -25,6 +26,7 @@ func LocalWatchdog(floors chan int, elev *elevator.Elevator, elevOrderTx chan el
 			}
 		case <-floors:
 			watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
+			fmt.Print("New floor reached")
 			//elev.Available = true
 		}
 	}

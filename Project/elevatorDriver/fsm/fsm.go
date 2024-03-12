@@ -23,8 +23,8 @@ func FsmServer(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.Ele
 		select {
 		case receivedOrder := <-elevOrderRx:
 			if receivedOrder.RecipientID == elev.ID {
-				fmt.Print("Received new order: ")
-				fmt.Printf("%+v\n", receivedOrder.Order)
+				//fmt.Print("Received new order: ")
+				//fmt.Printf("%+v\n", receivedOrder.Order)
 				onRequestButtonPress(receivedOrder.Order, elev)
 			}
 
@@ -38,11 +38,13 @@ func FsmServer(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.Ele
 
 		case obstrState := <-obstruction:
 			fmt.Printf("%+v\n", obstrState)
+			/*
 			elev.Obstruction = obstrState
 
 			//While the obstruction  is true, onFloorArrival should continue to run, holding the door open.
 			onFloorArrival(elev.Floor, elev)
-			
+			*/
+
 			//fix later
 		case stopState := <-stop:
 			fmt.Printf("%+v\n", stopState)

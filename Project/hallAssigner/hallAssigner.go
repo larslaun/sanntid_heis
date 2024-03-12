@@ -9,7 +9,7 @@ import (
 )
 
 //Estimates which elevator sholud serve an incomming request and returns it as an ElevatorOrder
-func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevators [settings.NumElevs]elevator.Elevator, localID int) elevator.ElevatorOrder {
+func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevators [settings.N_ELEVS]elevator.Elevator, localID int) elevator.ElevatorOrder {
 
 	var optimalElevID string
 	var lowestCost = 1000000
