@@ -9,15 +9,16 @@ import (
 )
 
 //Estimates which elevator sholud serve an incomming request and returns it as an ElevatorOrder
-func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevators [settings.NumElevs]elevator.Elevator, localID int) elevator.ElevatorOrder {
+func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevators [settings.N_ELEVS]elevator.Elevator, localID int) elevator.ElevatorOrder {
 
 	var optimalElevID string
 	var lowestCost = 1000000
 	var currCost int
 	var order elevator.ElevatorOrder
 
-	for i := 0; i < settings.NumElevs; i++ {
+	for i := 0; i < settings.N_ELEVS; i++ {
 		if elevators[i].Available {
+
 			elevators[i].Requests[buttonPress.Floor][buttonPress.Button] = true
 			currCost = cost.TimeToIdle(elevators[i])
 			if currCost < lowestCost {

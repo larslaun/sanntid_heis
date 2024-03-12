@@ -57,7 +57,7 @@ func HasRequests(elev elevator.Elevator) bool {
 
 //->"Continue in the current direction of travel if there are any further requests in that direction"
 
-func RequestsChooseDirection(elev elevator.Elevator) DirnBehaviourPair {
+func ChooseDirection(elev elevator.Elevator) DirnBehaviourPair {
 	switch elev.Dirn {
 	case elevio.MD_Up:
 		if RequestsAbove(elev) {
@@ -96,7 +96,7 @@ func RequestsChooseDirection(elev elevator.Elevator) DirnBehaviourPair {
 
 // checks if the elevator should stop at it's current floor or not. It will only stop if the cab has ordered it to or there is a
 // a request in the direction it is already moving.
-func Requests_shouldStop(elev elevator.Elevator) bool {
+func ShouldStop(elev elevator.Elevator) bool {
 	switch elev.Dirn {
 	case elevio.MD_Down:
 		return elev.Requests[elev.Floor][elevio.BT_HallDown] || elev.Requests[elev.Floor][elevio.BT_Cab] || !RequestsBelow(elev) 
@@ -122,7 +122,7 @@ func RequestsShouldClearImmediately(elev elevator.Elevator, btnFloor int, btnTyp
 // if the elevator is going up and there are no more requests above or requests UP at the current floor, it will clear the DOWN-request.
 // It also clears requests for UP as default, there are either no requests there, or it continues to go UP.
 // If the elevator state is Stop, it clears both UP and DOWN hall calls, probably only one of them at that floor, since the elevator door will open for one of (the first) the requests.
-func RequestsClearAtCurrentFloor(elev elevator.Elevator) elevator.Elevator {
+func ClearRequestAtCurrentFloor(elev elevator.Elevator) elevator.Elevator {
 	elev.Requests[elev.Floor][elevio.BT_Cab] = false //endret fra 0 til false
 
 	switch elev.Dirn {
