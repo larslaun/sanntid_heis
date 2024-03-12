@@ -1,7 +1,7 @@
 package peers
 
 import (
-	"Elev-project/Network-go-master/network/conn"
+	"Elev-project/networkDriver/network/conn"
 	"fmt"
 	"net"
 	"sort"

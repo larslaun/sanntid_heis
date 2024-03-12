@@ -1,7 +1,7 @@
 package bcast
 
 import (
-	"Elev-project/Network-go-master/network/conn"
+	"Elev-project/networkDriver/network/conn"
 	"encoding/json"
 	"fmt"
 	"net"

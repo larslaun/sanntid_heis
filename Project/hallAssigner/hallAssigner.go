@@ -1,24 +1,20 @@
 package hallAssigner
 
 import (
-	"Elev-project/collector"
-	"Elev-project/driver-go-master/cost_function"
-	"Elev-project/driver-go-master/elevator"
-	"Elev-project/driver-go-master/elevio"
+	"Elev-project/elevatorDriver/elevator"
+	"Elev-project/elevatorDriver/elevio"
+	"Elev-project/hallAssigner/cost"
 	"Elev-project/settings"
 	"strconv"
-	//"fmt"
 )
 
+func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevators [settings.NumElevs]elevator.Elevator, localID int) elevator.ElevatorOrder {
 
-
-func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevators [settings.NumElevs]elevator.Elevator) collector.ElevatorOrder{
-	
 	var optimalElevID string
 	var lowestCost = 1000000
-	var currCost int	
+	var currCost int
 
-	var order collector.ElevatorOrder
+	var order elevator.ElevatorOrder
 
 	for i := 0; i < settings.NumElevs; i++ {
 		if elevators[i].Available {
@@ -26,15 +22,21 @@ func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevators [settings.NumEl
 			//elevator.Elevator_print(elevators[i])
 			elevators[i].Requests[buttonPress.Floor][buttonPress.Button] = true
 
-			currCost = cost_function.TimeToIdle(elevators[i])
+			currCost = cost.TimeToIdle(elevators[i])
 			//fmt.Printf("Cost for elevator ID %d is the following: %d\n", i, currCost)
-			if currCost < lowestCost{
+			if currCost < lowestCost {
 				optimalElevID = strconv.Itoa(i)
 				lowestCost = currCost
-				order = collector.ElevatorOrder{RecipientID: optimalElevID, Order: buttonPress}
+				order = elevator.ElevatorOrder{RecipientID: optimalElevID, Order: buttonPress}
 			}
-		} 
+		}
 	}
+
+	if elevators[localID].Available == false {
+		order = elevator.ElevatorOrder{RecipientID: elevators[localID].ID, Order: buttonPress}
+	}
+
+	//fmt.Printf("Optimal ID calculated: " + optimalElevID + "\n")
 
 	return order
 }

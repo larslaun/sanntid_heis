@@ -1,24 +1,17 @@
 package main
 
 import (
-	"Elev-project/collector"
-	"Elev-project/distributor"
-	"Elev-project/driver-go-master/elevator"
+	"Elev-project/networkDriver/network/bcast"
+	"Elev-project/networkDriver/network/peers"
+	"Elev-project/communicationHandler/collector"
+	"Elev-project/communicationHandler/distributor"
+	"Elev-project/elevatorDriver/elevator"
 	"Elev-project/settings"
 	"Elev-project/watchdog"
-	"Elev-project/Network-go-master/network/bcast"
-	"Elev-project/Network-go-master/network/peers"
-
-	//"Elev-project/driver-go-master/elevator"
-	"Elev-project/driver-go-master/elevio"
-	"Elev-project/driver-go-master/fsm"
-
-	//"Elev-project/driver-go-master/cost_function"
-
-	//"fmt"
+	"Elev-project/elevatorDriver/elevio"
+	"Elev-project/elevatorDriver/fsm"
 	"os"
-	//"os/exec"
-	//"time"
+	
 )
 
 func main() {
@@ -51,17 +44,17 @@ func main() {
 	go bcast.Receiver(20010, elevStateRx2)
 
 	//Må finne ut at av hvilke porter som kan brukes
-	elevOrderTx := make(chan collector.ElevatorOrder)
-	elevOrderRx := make(chan collector.ElevatorOrder)
+	elevOrderTx := make(chan elevator.ElevatorOrder)
+	elevOrderRx := make(chan elevator.ElevatorOrder)
 	go bcast.Transmitter(21010, elevOrderTx)
 	go bcast.Receiver(21010, elevOrderRx)
 
 	var elev elevator.Elevator
 	//This is where process pairs were
-	elevio.Init("localhost:"+elevPort, settings.NumFloors)
+	elevio.Init("localhost:"+elevPort, settings.N_FLOORS)
 	fsm.Elev_init(&elev, id)
-	elevators := collector.ElevatorsInit()
-	recoveryElevators := collector.ElevatorsInit()
+	elevators := elevator.ElevatorsInit()
+	recoveryElevators := elevator.ElevatorsInit()
 	for i := 0; i < settings.NumElevs; i++ {
 		elevator.Elevator_print(elevators[i])
 	}
@@ -77,23 +70,20 @@ func main() {
 	go elevio.PollStopButton(drv_stop)
 
 	watchdog_floors := make(chan int)
-	watchdog_elevOrderTx := make(chan collector.ElevatorOrder)
+	watchdog_elevOrderTx := make(chan elevator.ElevatorOrder)
 	go bcast.Transmitter(21010, watchdog_elevOrderTx)
 
 	watchdog_elevStateRx := make(chan elevator.Elevator)
 	go bcast.Receiver(20010, watchdog_elevStateRx)
 
-	
-
 	go elevio.PollFloorSensor(watchdog_floors)
-	go watchdog.LocalWatchdog(watchdog_floors, &elev, watchdog_elevOrderTx, watchdog_elevStateRx, &elevators)
-	go watchdog.NetworkWatchdog(peerUpdateCh, &elev, &elevators, &recoveryElevators, watchdog_elevOrderTx, watchdog_elevStateRx)
+	go watchdog.LocalWatchdog(watchdog_floors, &elev, watchdog_elevOrderTx, elevOrderRx, watchdog_elevStateRx, &elevators)
+	go watchdog.NetworkWatchdog(peerUpdateCh, &elev, &elevators, &recoveryElevators, watchdog_elevOrderTx, elevOrderRx, watchdog_elevStateRx)
 
-	go collector.CollectStates(elevStateRx, &elevators)
+	go collector.CollectStates(elevStateRx, &elevators, &elev)
 	go distributor.DistributeState(elevStateTx, &elev)
-	
 
-	go fsm.Fsm_server(elevStateRx2, elevOrderRx, elevOrderTx, drv_buttons,drv_floors, drv_obstruction, drv_stop, &elev, &elevators)
+	go fsm.Fsm_server(elevStateRx2, elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstruction, drv_stop, &elev, &elevators)
 
 	//i := cost_function.TimeToIdle(elev)
 	//fmt.Printf("\nTime to idle: %d\n", i)
