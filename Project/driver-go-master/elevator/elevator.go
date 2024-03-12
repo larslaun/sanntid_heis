@@ -2,12 +2,12 @@ package elevator
 
 import (
 	"Elev-project/driver-go-master/elevio"
+	"Elev-project/settings"
 	"fmt"
+	"strconv"
 )
 
 //Deklarerer her foreløpig
-const N_FLOORS int = 4
-const N_BUTTONS int = 3
 
 
 type ElevatorBehaviour int
@@ -22,7 +22,7 @@ const (
 type Elevator struct{
 	Floor int
 	Dirn elevio.MotorDirection
-	Requests[N_FLOORS][N_BUTTONS] bool 
+	Requests[settings.N_FLOORS][settings.N_BUTTONS] bool 
 	Behaviour ElevatorBehaviour
 	ID string
 	Available bool 	
@@ -73,10 +73,10 @@ func Elevator_print(es Elevator){
     fmt.Printf("  |behav = %-12.12s|\n", Eb_toString(es.Behaviour)) 
 	fmt.Print("  +--------------------+\n")
 	fmt.Print("  |  | up  | dn  | cab |\n")
-	for f := N_FLOORS-1; f >= 0; f--{
+	for f := settings.N_FLOORS-1; f >= 0; f--{
 		fmt.Printf("  | %d", f);
-		for btn := 0; btn < N_BUTTONS; btn++{
-			if (f == N_FLOORS-1 && btn == int(elevio.BT_HallUp))  || (f == 0 && btn == elevio.BT_HallDown){
+		for btn := 0; btn < settings.N_BUTTONS; btn++{
+			if (f == settings.N_FLOORS-1 && btn == int(elevio.BT_HallUp))  || (f == 0 && btn == elevio.BT_HallDown){
 				fmt.Print("|     ");
 			} else {
 				if es.Requests[f][btn]{
@@ -104,3 +104,12 @@ func Elevator_uninitialized(es *Elevator, elevID string){  //initialize elevator
 }
 
 
+func ElevatorsInit() [settings.NumElevs]Elevator{
+	var elevators = [settings.NumElevs]Elevator{}
+
+	for i := 0; i < settings.NumElevs; i++ {
+		Elevator_uninitialized(&elevators[i], strconv.Itoa(i))
+		Elevator_print(elevators[i])
+	}
+	return elevators
+}
