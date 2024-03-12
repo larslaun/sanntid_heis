@@ -43,20 +43,18 @@ func main() {
 	elevStateRx2 := make(chan elevator.Elevator)
 	go bcast.Receiver(20010, elevStateRx2)
 
-	//Må finne ut at av hvilke porter som kan brukes
 	elevOrderTx := make(chan elevator.ElevatorOrder)
 	elevOrderRx := make(chan elevator.ElevatorOrder)
 	go bcast.Transmitter(21010, elevOrderTx)
 	go bcast.Receiver(21010, elevOrderRx)
 
 	var elev elevator.Elevator
-	//This is where process pairs were
 	elevio.Init("localhost:"+elevPort, settings.N_FLOORS)
-	fsm.Elev_init(&elev, id)
-	elevators := elevator.ElevatorsInit()
-	recoveryElevators := elevator.ElevatorsInit()
-	for i := 0; i < settings.NumElevs; i++ {
-		elevator.Elevator_print(elevators[i])
+	fsm.ElevatorInit(&elev, id)
+	elevators := elevator.ElevatorArrayInit()
+	recoveryElevators := elevator.ElevatorArrayInit()
+	for i := 0; i < settings.N_ELEVS; i++ {
+		elevator.PrintElevator(elevators[i])
 	}
 
 	drv_buttons := make(chan elevio.ButtonEvent)
@@ -83,7 +81,7 @@ func main() {
 	go collector.CollectStates(elevStateRx, &elevators, &elev)
 	go distributor.DistributeState(elevStateTx, &elev)
 
-	go fsm.Fsm_server(elevStateRx2, elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstruction, drv_stop, &elev, &elevators)
+	go fsm.FsmServer(elevStateRx2, elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstruction, drv_stop, &elev, &elevators)
 
 	//i := cost_function.TimeToIdle(elev)
 	//fmt.Printf("\nTime to idle: %d\n", i)

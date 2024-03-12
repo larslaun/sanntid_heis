@@ -16,8 +16,9 @@ func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevators [settings.NumEl
 	var currCost int
 	var order elevator.ElevatorOrder
 
-	for i := 0; i < settings.NumElevs; i++ {
+	for i := 0; i < settings.N_ELEVS; i++ {
 		if elevators[i].Available {
+
 			elevators[i].Requests[buttonPress.Floor][buttonPress.Button] = true
 			currCost = cost.TimeToIdle(elevators[i])
 			if currCost < lowestCost {
