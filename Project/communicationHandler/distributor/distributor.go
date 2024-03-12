@@ -53,7 +53,7 @@ func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan elevator.E
 					//fmt.Print(recievedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button])
 					if recievedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button] || recievedState.Floor == elevOrder.Order.Floor {
 						//fmt.Print("2")
-						fmt.Print("CORRECT state recieved\n")
+						//fmt.Print("CORRECT state recieved\n")
 						return
 					} //else {
 						//fmt.Print("Wrong state recieved\n")
