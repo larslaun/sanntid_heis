@@ -10,55 +10,50 @@ import (
 	"time"
 )
 
-func Fsm_onInitBetweenFloors(elev *elevator.Elevator) {
+func initBetweenFloors(elev *elevator.Elevator) {
 	elevio.SetMotorDirection(elevio.MD_Down)
 	elev.Dirn = elevio.MD_Down
 	elev.Behaviour = elevator.EB_Moving
 }
 
-func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.ElevatorOrder, elevOrderTx chan elevator.ElevatorOrder, buttons chan elevio.ButtonEvent, floors chan int, obstruction chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
+func FsmServer(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.ElevatorOrder, elevOrderTx chan elevator.ElevatorOrder, buttons chan elevio.ButtonEvent, floors chan int, obstruction chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.N_ELEVS]elevator.Elevator) {
 	go updateLights(elevators, elev)
 
 	for {
 		select {
-		case a := <-elevOrderRx:
-			if a.RecipientID == elev.ID {
+		case receivedOrder := <-elevOrderRx:
+			if receivedOrder.RecipientID == elev.ID {
 				fmt.Print("Received new order: ")
-				fmt.Printf("%+v\n", a.Order)
-				Fsm_onRequestButtonPress(a.Order, elev)
+				fmt.Printf("%+v\n", receivedOrder.Order)
+				onRequestButtonPress(receivedOrder.Order, elev)
 			}
 
-		//legg inn dette igjen og kall på distribute order funksjon her, da kan den også brukes enklere til redistribute og cab calls
-		case a := <-buttons:
-			go distributor.DistributeOrder(a, elevOrderTx, elevOrderRx, elevStateRx, elevators, elev)
+		case buttonPress := <-buttons:
+			go distributor.DistributeOrder(buttonPress, elevOrderTx, elevOrderRx, elevStateRx, elevators, elev)
 			
 
-		case a := <-floors:
-			//fmt.Printf("%+v\n", a)
-			Fsm_onFloorArrival(a, elev)
+		case currentFloor := <-floors:
+			onFloorArrival(currentFloor, elev)
 			
 
-		case a := <-obstruction:
-			fmt.Printf("%+v\n", a)
-			elev.Obstruction = a
+		case obstrState := <-obstruction:
+			fmt.Printf("%+v\n", obstrState)
+			elev.Obstruction = obstrState
 
 			//While the obstruction  is true, onFloorArrival should continue to run, holding the door open.
-			Fsm_onFloorArrival(elev.Floor, elev)
+			onFloorArrival(elev.Floor, elev)
 			
-
-		case a := <-stop:
-			fmt.Printf("%+v\n", a)
-			//lag ny funksjon her eller finnes det allerede? tror det sto noe om at det
-			//ikke var definert noen oppførsel. kan velge selv?
-
+			//fix later
+		case stopState := <-stop:
+			fmt.Printf("%+v\n", stopState)
+			//elevio.SetStopLamp(stopState)
 		}
 	}
 
 }
 
-func Fsm_onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevator) {
+func onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevator) {
 
-	//elevator.Elevator_print(*elev)
 
 	switch elev.Behaviour {
 	case elevator.EB_DoorOpen:
@@ -74,7 +69,7 @@ func Fsm_onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevato
 
 	case elevator.EB_Idle:
 		elev.Requests[buttons.Floor][buttons.Button] = true
-		var pair requests.DirnBehaviourPair = requests.RequestsChooseDirection(*elev)
+		var pair requests.DirnBehaviourPair = requests.ChooseDirection(*elev)
 		elev.Dirn = pair.Dirn
 		elev.Behaviour = pair.Behaviour
 		switch pair.Behaviour {
@@ -83,36 +78,33 @@ func Fsm_onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevato
 
 			time.AfterFunc(settings.DoorOpenDuration, func() { onDoorTimeout(elev) })
 
-			*elev = requests.RequestsClearAtCurrentFloor(*elev)
+			*elev = requests.ClearRequestAtCurrentFloor(*elev)
 
 		case elevator.EB_Moving:
 			elevio.SetMotorDirection(elev.Dirn)
 		case elevator.EB_Idle:
 		}
 	}
-	SetCabLights(*elev)
-	//print("\nNew state:\n")
-	//elevator.Elevator_print(*elev)
+	//SetCabLights(*elev)
 }
 
-func Fsm_onFloorArrival(newFloor int, elev *elevator.Elevator) {
+func onFloorArrival(newFloor int, elev *elevator.Elevator) {
 
-	//elevator.Elevator_print(*elev)
 
 	elev.Floor = newFloor //dobbeltsjekk at det faktisk er den nye etasjen som blir tatt inn her
 	elevio.SetFloorIndicator(newFloor)
 
 	switch elev.Behaviour {
 	case elevator.EB_Moving:
-		if requests.Requests_shouldStop(*elev) {
+		if requests.ShouldStop(*elev) {
 			elevio.SetMotorDirection(elevio.MD_Stop)
 			elevio.SetDoorOpenLamp(true)
 
-			*elev = requests.RequestsClearAtCurrentFloor(*elev)
+			*elev = requests.ClearRequestAtCurrentFloor(*elev)
 
 			time.AfterFunc(settings.DoorOpenDuration, func() { onDoorTimeout(elev) })
 
-			SetCabLights(*elev)
+			//SetCabLights(*elev)
 			elev.Behaviour = elevator.EB_DoorOpen
 
 		}
@@ -132,7 +124,7 @@ func SetCabLights(elev elevator.Elevator) {
 	}
 }
 
-func SetHallLights(elevators *[settings.NumElevs]elevator.Elevator, localElev *elevator.Elevator) {
+func SetHallLights(elevators *[settings.N_ELEVS]elevator.Elevator, localElev *elevator.Elevator) {
 	
 	//making a matrix with zeros
 	hallMatrix := make([][]bool, settings.N_FLOORS)
@@ -171,7 +163,7 @@ func SetHallLights(elevators *[settings.NumElevs]elevator.Elevator, localElev *e
 }
 
 
-func updateLights(elevators *[settings.NumElevs]elevator.Elevator, localElev *elevator.Elevator){
+func updateLights(elevators *[settings.N_ELEVS]elevator.Elevator, localElev *elevator.Elevator){
 	for{
 		SetHallLights(elevators, localElev)
 		SetCabLights(*localElev)
@@ -184,14 +176,14 @@ func onDoorTimeout(elev *elevator.Elevator) {
 
 	switch elev.Behaviour {
 	case elevator.EB_DoorOpen:
-		var pair requests.DirnBehaviourPair = requests.RequestsChooseDirection(*elev)
+		var pair requests.DirnBehaviourPair = requests.ChooseDirection(*elev)
 		elev.Dirn = pair.Dirn
 		elev.Behaviour = pair.Behaviour
 
 		switch elev.Behaviour {
 		case elevator.EB_DoorOpen:
 			time.AfterFunc(settings.DoorOpenDuration, func() { onDoorTimeout(elev) })
-			*elev = requests.RequestsClearAtCurrentFloor(*elev)
+			*elev = requests.ClearRequestAtCurrentFloor(*elev)
 
 		case elevator.EB_Moving:
 			elevio.SetDoorOpenLamp(false)
@@ -202,16 +194,13 @@ func onDoorTimeout(elev *elevator.Elevator) {
 		}
 
 	}
-	//print("\nNew state:\n")
-	//elevator.Elevator_print(*elev)
 
 }
 
-func Elev_init(elev *elevator.Elevator, elevID string) {
-	elevator.Elevator_uninitialized(elev, elevID)
-	//if elevio.GetFloor() == -1 {
-	Fsm_onInitBetweenFloors(elev)
-	//}
+func ElevatorInit(elev *elevator.Elevator, elevID string) {
+	elevator.InitializeElevStates(elev, elevID)
+	initBetweenFloors(elev)
+	
 	SetCabLights(*elev)
 	for floor := 0; floor < settings.N_FLOORS; floor++ {
 		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++ {
@@ -220,5 +209,5 @@ func Elev_init(elev *elevator.Elevator, elevID string) {
 	}
 
 	print("\nElevator initialized at following state: \n")
-	elevator.Elevator_print(*elev)
+	elevator.PrintElevator(*elev)
 }

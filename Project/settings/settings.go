@@ -6,7 +6,7 @@ import (
 )
 
 
-const NumElevs int = 3
+const N_ELEVS int = 3
 const N_FLOORS int = 4
 const N_BUTTONS int = 3
 
@@ -21,6 +21,6 @@ const DoorOpenDuration = time.Duration(3) * time.Second
 
 //Cost calculation settings
 const DOOROPENTIME = 3
-const TRAVELTIME = 5
+const TRAVELTIME = 3
 
 

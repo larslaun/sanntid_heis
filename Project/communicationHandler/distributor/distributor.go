@@ -21,12 +21,11 @@ func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Ele
 }
 
 
-func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, localElev *elevator.Elevator) {
+func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.N_ELEVS]elevator.Elevator, localElev *elevator.Elevator) {
 
 	localID, _ := strconv.Atoi(localElev.ID)
 	elevOrder := hallAssigner.ChooseOptimalElev(buttonPress, *elevators, localID)
 
-	//elevator.Elevator_print(*localElev)
 
 	/*
 		fmt.Printf("\nOptimal elev calculated:\n")
@@ -91,7 +90,7 @@ func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan elevator.E
 
 }
 
-func RedistributeFaultyElevOrders(elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, faultyElev *elevator.Elevator) {
+func RedistributeFaultyElevOrders(elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.N_ELEVS]elevator.Elevator, faultyElev *elevator.Elevator) {
 	fmt.Print("\nRedistribute initiated\n")
 	for floor := 0; floor < settings.N_FLOORS; floor++ {
 		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab; btn++ {
@@ -107,7 +106,7 @@ func RedistributeFaultyElevOrders(elevOrderTx chan elevator.ElevatorOrder, elevO
 	}
 }
 
-func RecoverCabOrders(elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, faultyElev *elevator.Elevator) {
+func RecoverCabOrders(elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.N_ELEVS]elevator.Elevator, faultyElev *elevator.Elevator) {
 	fmt.Print("\nCab recovery initiated\n")
 	for floor := 0; floor < settings.N_FLOORS; floor++ {
 		if faultyElev.Requests[floor][elevio.BT_Cab] {

@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func LocalWatchdog(floors chan int, elev *elevator.Elevator, elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder,elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
+func LocalWatchdog(floors chan int, elev *elevator.Elevator, elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder,elevStateRx chan elevator.Elevator, elevators *[settings.N_ELEVS]elevator.Elevator) {
 	watchdogTimer := time.NewTimer(settings.WatchdogTimeoutDuration)
 	for {
 		select {
@@ -31,7 +31,7 @@ func LocalWatchdog(floors chan int, elev *elevator.Elevator, elevOrderTx chan el
 }
 
 
-func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, recoveryElevators *[settings.NumElevs]elevator.Elevator, elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder,elevStateRx chan elevator.Elevator) {
+func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Elevator, elevators *[settings.N_ELEVS]elevator.Elevator, recoveryElevators *[settings.N_ELEVS]elevator.Elevator, elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder,elevStateRx chan elevator.Elevator) {
 	for {
 		select {
 		case peers := <-peerUpdateCh:
@@ -46,13 +46,9 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Ele
 				localElev.Available = true
 				elevators[newElev].Available = true
 				recoveryElevators[newElev].Available = true
-				//fmt.Print("Will recover this now:\n")
-				//elevator.Elevator_print(recoveryElevators[newElev])
 				distributor.RecoverCabOrders(elevOrderTx, elevOrderRx,elevStateRx, elevators, &recoveryElevators[newElev])
 			}
 
-			//fmt.Print("\nNew elevator:\n")
-			//elevator.Elevator_print(elevators[newElev])
 
 			lostElevs := peers.Lost
 			for _, s := range lostElevs {
@@ -60,9 +56,6 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Ele
 				fmt.Printf("s val: %d\n", s)
 				elevators[s].Available = false
 				recoveryElevators[s] = elevators[s]
-				//fmt.Printf("\nLost elevator ID %d:\n", s)
-				//fmt.Print("Recovery state saved:\n")
-				//elevator.Elevator_print(recoveryElevators[s])
 
 				
 				if len(peers.Peers) !=  0{

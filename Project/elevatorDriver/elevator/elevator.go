@@ -7,7 +7,6 @@ import (
 	"strconv"
 )
 
-//Deklarerer her foreløpig
 
 
 type ElevatorBehaviour int
@@ -35,18 +34,18 @@ type ElevatorOrder struct{
 }
 
 
-// return or print directly??
-func Elevio_dirn_toString(md elevio.MotorDirection) string{
-	if md == elevio.MD_Up{
+
+func dirnToString(motorDir elevio.MotorDirection) string{
+	if motorDir == elevio.MD_Up{
 		return "MD_Up"
-	} else if md==elevio.MD_Down {
+	} else if motorDir==elevio.MD_Down {
 		return "MD_Down"
 	}else{
 		return "MD_Stop"
 	}
 }
 
-func Eb_toString(eb ElevatorBehaviour) string{
+func behaviourToString(eb ElevatorBehaviour) string{
 	if eb == EB_Idle{
 		return "EB_Idle"  
 	} else if eb==EB_DoorOpen {
@@ -57,7 +56,7 @@ func Eb_toString(eb ElevatorBehaviour) string{
 }
 
 
-func Elevator_print(es Elevator){
+func PrintElevator(es Elevator){
 	fmt.Print("\nElevator ID: ")
 	fmt.Print(es.ID)
 	fmt.Print("\n")
@@ -69,8 +68,8 @@ func Elevator_print(es Elevator){
 	fmt.Print("\n")
 	fmt.Print("  +--------------------+\n")
 	fmt.Printf("  |floor = %-2d|\n", es.Floor)
-    fmt.Printf("  |dirn  = %-12.12s|\n", Elevio_dirn_toString(es.Dirn))
-    fmt.Printf("  |behav = %-12.12s|\n", Eb_toString(es.Behaviour)) 
+    fmt.Printf("  |dirn  = %-12.12s|\n", dirnToString(es.Dirn))
+    fmt.Printf("  |behav = %-12.12s|\n", behaviourToString(es.Behaviour)) 
 	fmt.Print("  +--------------------+\n")
 	fmt.Print("  |  | up  | dn  | cab |\n")
 	for f := settings.N_FLOORS-1; f >= 0; f--{
@@ -84,7 +83,6 @@ func Elevator_print(es Elevator){
 				} else {
 					fmt.Print("|  -  ")
 				}
-				//fmt.Print(es.requests[f][btn] ? "|  #  " : "|  -  "); replaced by if sentence over ^
 			}
 		}
 		fmt.Print("|\n");
@@ -94,22 +92,22 @@ func Elevator_print(es Elevator){
 }
 
 
-func Elevator_uninitialized(es *Elevator, elevID string){  //initialize elevator, passing pointer
-	es.Floor = 1  //OBS! endret denne til 1 istedenfor -1 pga. index feil. Kan virke som dette funker siden man poller floor uansett og det vil bli endret til riktig
-	es.Dirn = elevio.MD_Stop
-	es.Behaviour = EB_Idle
-	es.ID = elevID
-	es.Available = false
-	es.Obstruction = false 
+func InitializeElevStates(elev *Elevator, elevID string){  
+	elev.Floor = 1  
+	elev.Dirn = elevio.MD_Stop
+	elev.Behaviour = EB_Idle
+	elev.ID = elevID
+	elev.Available = false
+	elev.Obstruction = false 
 }
 
 
-func ElevatorsInit() [settings.NumElevs]Elevator{
-	var elevators = [settings.NumElevs]Elevator{}
+func ElevatorArrayInit() [settings.N_ELEVS]Elevator{
+	var elevators = [settings.N_ELEVS]Elevator{}
 
-	for i := 0; i < settings.NumElevs; i++ {
-		Elevator_uninitialized(&elevators[i], strconv.Itoa(i))
-		Elevator_print(elevators[i])
+	for i := 0; i < settings.N_ELEVS; i++ {
+		InitializeElevStates(&elevators[i], strconv.Itoa(i))
+		PrintElevator(elevators[i])
 	}
 	return elevators
 }

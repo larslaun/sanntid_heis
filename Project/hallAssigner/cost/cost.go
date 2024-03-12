@@ -18,10 +18,9 @@ func TimeToIdle(elevSim elevator.Elevator) int {
 
 	switch elevSim.Behaviour {
 	case elevator.EB_Idle:
-		elevSim.Dirn = requests.RequestsChooseDirection(elevSim).Dirn
+		elevSim.Dirn = requests.ChooseDirection(elevSim).Dirn
 		if elevSim.Dirn == elevio.MD_Stop {
 			//fmt.Printf("\nElevator ID "+elevSim.ID+" calculated duration1: %d\n", Duration)
-			//elevator.Elevator_print(elevSim)
 			return Duration
 		}
 	case elevator.EB_Moving:
@@ -32,14 +31,13 @@ func TimeToIdle(elevSim elevator.Elevator) int {
 
 	}
 	for {
-		if requests.Requests_shouldStop(elevSim) {
+		if requests.ShouldStop(elevSim) {
 
 			elevSim = CostClearAtCurrentFloor(elevSim)
 			Duration += settings.DOOROPENTIME
-			elevSim.Dirn = requests.RequestsChooseDirection(elevSim).Dirn
+			elevSim.Dirn = requests.ChooseDirection(elevSim).Dirn
 			if elevSim.Dirn == elevio.MD_Stop {
 				//fmt.Printf("\nElevator ID "+elevSim.ID+" calculated duration2: %d\n", Duration)
-				//elevator.Elevator_print(elevSim)
 				return Duration
 			}
 		}
