@@ -29,6 +29,11 @@ type Elevator struct{
 	Obstruction bool
 }
 
+type ElevatorOrder struct{
+	RecipientID string
+	Order elevio.ButtonEvent
+}
+
 
 // return or print directly??
 func Elevio_dirn_toString(md elevio.MotorDirection) string{

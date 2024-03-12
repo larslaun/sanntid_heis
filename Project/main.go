@@ -3,8 +3,8 @@ package main
 import (
 	"Elev-project/Network-go-master/network/bcast"
 	"Elev-project/Network-go-master/network/peers"
-	"Elev-project/collector"
-	"Elev-project/distributor"
+	"Elev-project/communicationHandler/collector"
+	"Elev-project/communicationHandler/distributor"
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/settings"
 	"Elev-project/watchdog"
@@ -51,14 +51,14 @@ func main() {
 	go bcast.Receiver(20010, elevStateRx2)
 
 	//Må finne ut at av hvilke porter som kan brukes
-	elevOrderTx := make(chan collector.ElevatorOrder)
-	elevOrderRx := make(chan collector.ElevatorOrder)
+	elevOrderTx := make(chan elevator.ElevatorOrder)
+	elevOrderRx := make(chan elevator.ElevatorOrder)
 	go bcast.Transmitter(21010, elevOrderTx)
 	go bcast.Receiver(21010, elevOrderRx)
 
 	var elev elevator.Elevator
 	//This is where process pairs were
-	elevio.Init("localhost:"+elevPort, settings.NumFloors)
+	elevio.Init("localhost:"+elevPort, settings.N_FLOORS)
 	fsm.Elev_init(&elev, id)
 	elevators := collector.ElevatorsInit()
 	recoveryElevators := collector.ElevatorsInit()
@@ -77,7 +77,7 @@ func main() {
 	go elevio.PollStopButton(drv_stop)
 
 	watchdog_floors := make(chan int)
-	watchdog_elevOrderTx := make(chan collector.ElevatorOrder)
+	watchdog_elevOrderTx := make(chan elevator.ElevatorOrder)
 	go bcast.Transmitter(21010, watchdog_elevOrderTx)
 
 	watchdog_elevStateRx := make(chan elevator.Elevator)

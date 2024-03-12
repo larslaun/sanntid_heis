@@ -2,8 +2,7 @@ package watchdog
 
 import (
 	"Elev-project/Network-go-master/network/peers"
-	"Elev-project/collector"
-	"Elev-project/distributor"
+	"Elev-project/communicationHandler/distributor"
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/requests"
 	"Elev-project/settings"
@@ -13,7 +12,7 @@ import (
 	"time"
 )
 
-func LocalWatchdog(floors chan int, elev *elevator.Elevator, elevOrderTx chan collector.ElevatorOrder, elevOrderRx chan collector.ElevatorOrder,elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
+func LocalWatchdog(floors chan int, elev *elevator.Elevator, elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder,elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
 	watchdogTimer := time.NewTimer(settings.WatchdogTimeoutDuration)
 	for {
 		select {
@@ -32,7 +31,7 @@ func LocalWatchdog(floors chan int, elev *elevator.Elevator, elevOrderTx chan co
 }
 
 
-func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, recoveryElevators *[settings.NumElevs]elevator.Elevator, elevOrderTx chan collector.ElevatorOrder, elevOrderRx chan collector.ElevatorOrder,elevStateRx chan elevator.Elevator) {
+func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, recoveryElevators *[settings.NumElevs]elevator.Elevator, elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder,elevStateRx chan elevator.Elevator) {
 	for {
 		select {
 		case peers := <-peerUpdateCh:

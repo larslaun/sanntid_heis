@@ -2,20 +2,12 @@ package collector
 
 import (
 	"Elev-project/driver-go-master/elevator"
-	"Elev-project/driver-go-master/elevio"
-
-	//"fmt"
-	//"Elev-project/driver-go-master/fsm"
 	"Elev-project/settings"
 	"strconv"
 )
 
 
 
-type ElevatorOrder struct{
-	RecipientID string
-	Order elevio.ButtonEvent
-}
 
 
 func ElevatorsInit() [settings.NumElevs]elevator.Elevator{

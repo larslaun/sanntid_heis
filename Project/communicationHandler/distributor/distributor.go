@@ -1,7 +1,6 @@
 package distributor
 
 import (
-	"Elev-project/collector"
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
 	"Elev-project/hallAssigner"
@@ -10,6 +9,9 @@ import (
 	"strconv"
 	"time"
 )
+
+
+
 
 func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Elevator) {
 	for {
@@ -21,7 +23,7 @@ func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Ele
 //psuedo distributor
 //Receives buttonpress, then calculates optimal elevator wiht cost func,then sends elevOrder which includes order and ID of elev.
 
-func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan collector.ElevatorOrder, elevOrderRx chan collector.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, localElev *elevator.Elevator) {
+func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, localElev *elevator.Elevator) {
 
 	localID, _ := strconv.Atoi(localElev.ID)
 	elevOrder := hallAssigner.ChooseOptimalElev(buttonPress, *elevators, localID)
@@ -91,7 +93,7 @@ func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan collector.
 
 }
 
-func RedistributeFaultyElevOrders(elevOrderTx chan collector.ElevatorOrder, elevOrderRx chan collector.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, faultyElev *elevator.Elevator) {
+func RedistributeFaultyElevOrders(elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, faultyElev *elevator.Elevator) {
 	fmt.Print("\nRedistribute initiated\n")
 	for floor := 0; floor < elevator.N_FLOORS; floor++ {
 		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab; btn++ {
@@ -107,7 +109,7 @@ func RedistributeFaultyElevOrders(elevOrderTx chan collector.ElevatorOrder, elev
 	}
 }
 
-func RecoverCabOrders(elevOrderTx chan collector.ElevatorOrder, elevOrderRx chan collector.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, faultyElev *elevator.Elevator) {
+func RecoverCabOrders(elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, faultyElev *elevator.Elevator) {
 	fmt.Print("\nCab recovery initiated\n")
 	for floor := 0; floor < elevator.N_FLOORS; floor++ {
 		if faultyElev.Requests[floor][elevio.BT_Cab] {

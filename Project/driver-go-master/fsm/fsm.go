@@ -1,14 +1,12 @@
 package fsm
 
 import (
-	"Elev-project/collector"
-	"Elev-project/distributor"
+	"Elev-project/communicationHandler/distributor"
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
 	"Elev-project/driver-go-master/requests"
 	"Elev-project/settings"
 	"fmt"
-	//"strconv"
 	"time"
 )
 
@@ -18,7 +16,7 @@ func Fsm_onInitBetweenFloors(elev *elevator.Elevator) {
 	elev.Behaviour = elevator.EB_Moving
 }
 
-func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.ElevatorOrder, elevOrderTx chan collector.ElevatorOrder, buttons chan elevio.ButtonEvent, floors chan int, obstruction chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
+func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.ElevatorOrder, elevOrderTx chan elevator.ElevatorOrder, buttons chan elevio.ButtonEvent, floors chan int, obstruction chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
 	//localID, _ := strconv.Atoi(elev.ID)
 	
 	go updateLights(elevators, elev)
