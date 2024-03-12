@@ -31,6 +31,7 @@ func LocalWatchdog(floors chan int, elev *elevator.Elevator, elevOrderTx chan co
 	}
 }
 
+
 func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator, recoveryElevators *[settings.NumElevs]elevator.Elevator, elevOrderTx chan collector.ElevatorOrder, elevOrderRx chan collector.ElevatorOrder,elevStateRx chan elevator.Elevator) {
 	for {
 		select {
@@ -43,6 +44,7 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Ele
 
 			if peers.New != "" {
 				newElev, _ := strconv.Atoi(peers.New)
+				localElev.Available = true
 				elevators[newElev].Available = true
 				recoveryElevators[newElev].Available = true
 				//fmt.Print("Will recover this now:\n")
@@ -65,11 +67,11 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Ele
 
 				
 				if len(peers.Peers) !=  0{
-					localElev.Available = false
 					if localElev.ID == peers.Peers[0] {
-					//elevator.Elevator_print(elevators[s])
 					distributor.RedistributeFaultyElevOrders(elevOrderTx, elevOrderRx,elevStateRx, elevators, &elevators[s])
 					}
+				}else{
+					localElev.Available = false
 				}
 			}
 		}

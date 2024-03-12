@@ -11,18 +11,9 @@ import (
 	"time"
 )
 
-func DistributeState(elevStateTx chan elevator.Elevator, elevStateRx chan elevator.Elevator, localElev *elevator.Elevator) {
+func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Elevator) {
 	for {
-		//localElev.Available = true
-		if localElev.Available == false {
-			fmt.Print("\nthomAS\n")
-
-			elevStateRx <- *localElev
-
-		} else {
-			elevStateTx <- *localElev
-			
-		}
+		elevStateTx <- *localElev
 		time.Sleep(20 * time.Millisecond)
 	}
 }
@@ -65,9 +56,9 @@ func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan collector.
 						//fmt.Print("2")
 						fmt.Print("CORRECT state recieved\n")
 						return
-					} else {
-						fmt.Print("Wrong state recieved\n")
-					}
+					} //else {
+						//fmt.Print("Wrong state recieved\n")
+					//}
 				}
 
 			case <-time.After(time.Millisecond * 40):

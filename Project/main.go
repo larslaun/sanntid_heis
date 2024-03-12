@@ -8,7 +8,6 @@ import (
 	"Elev-project/driver-go-master/elevator"
 	"Elev-project/settings"
 	"Elev-project/watchdog"
-	"fmt"
 
 	//"Elev-project/driver-go-master/elevator"
 	"Elev-project/driver-go-master/elevio"
@@ -25,8 +24,6 @@ import (
 func main() {
 	// Our id can be anything. Here we pass it on the command line, using
 	//  `go run main.go -id=our_id`
-
-	fmt.Print("test")
 
 	var elevPort string
 	var id string
@@ -59,7 +56,6 @@ func main() {
 	go bcast.Transmitter(21010, elevOrderTx)
 	go bcast.Receiver(21010, elevOrderRx)
 
-
 	var elev elevator.Elevator
 	//This is where process pairs were
 	elevio.Init("localhost:"+elevPort, settings.NumFloors)
@@ -87,17 +83,14 @@ func main() {
 	watchdog_elevStateRx := make(chan elevator.Elevator)
 	go bcast.Receiver(20010, watchdog_elevStateRx)
 
-	
-
 	go elevio.PollFloorSensor(watchdog_floors)
-	go watchdog.LocalWatchdog(watchdog_floors, &elev, watchdog_elevOrderTx, elevOrderRx,watchdog_elevStateRx, &elevators)
-	go watchdog.NetworkWatchdog(peerUpdateCh, &elev, &elevators, &recoveryElevators, watchdog_elevOrderTx, elevOrderRx,watchdog_elevStateRx)
+	go watchdog.LocalWatchdog(watchdog_floors, &elev, watchdog_elevOrderTx, elevOrderRx, watchdog_elevStateRx, &elevators)
+	go watchdog.NetworkWatchdog(peerUpdateCh, &elev, &elevators, &recoveryElevators, watchdog_elevOrderTx, elevOrderRx, watchdog_elevStateRx)
 
-	go collector.CollectStates(elevStateRx, &elevators)
-	go distributor.DistributeState(elevStateTx, elevStateRx,&elev)
-	
+	go collector.CollectStates(elevStateRx, &elevators, &elev)
+	go distributor.DistributeState(elevStateTx, &elev)
 
-	go fsm.Fsm_server(elevStateRx2, elevOrderRx, elevOrderTx, drv_buttons,drv_floors, drv_obstruction, drv_stop, &elev, &elevators)
+	go fsm.Fsm_server(elevStateRx2, elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstruction, drv_stop, &elev, &elevators)
 
 	//i := cost_function.TimeToIdle(elev)
 	//fmt.Printf("\nTime to idle: %d\n", i)

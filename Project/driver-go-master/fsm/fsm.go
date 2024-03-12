@@ -8,7 +8,7 @@ import (
 	"Elev-project/driver-go-master/requests"
 	"Elev-project/settings"
 	"fmt"
-	"strconv"
+	//"strconv"
 	"time"
 )
 
@@ -19,19 +19,22 @@ func Fsm_onInitBetweenFloors(elev *elevator.Elevator) {
 }
 
 func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.ElevatorOrder, elevOrderTx chan collector.ElevatorOrder, buttons chan elevio.ButtonEvent, floors chan int, obstruction chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.NumElevs]elevator.Elevator) {
-	localID, _ := strconv.Atoi(elev.ID)
+	//localID, _ := strconv.Atoi(elev.ID)
+	
+	go updateLights(elevators, elev)
 
 	for {
 
 		//elevator.Elevator_print(*elev)
 		select {
 
+		/*
 		case receivedElev := <-elevStateRx:
-			fmt.Print("\n112334\n")
-			SetHallLights(elevators, elev, localID)
+			SetHallLights(elevators, elev)
 			if elev.ID == receivedElev.ID {
 				SetCabLights(receivedElev)
 			}
+		*/
 
 		case a := <-elevOrderRx:
 			if a.RecipientID == elev.ID {
@@ -44,10 +47,6 @@ func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.E
 		case a := <-buttons:
 			go distributor.DistributeOrder(a, elevOrderTx, elevOrderRx,elevStateRx, elevators, elev)
 			
-			/*if elevators[localID].Available == false{
-				SetHallLights(elevators, elev, localID)
-				SetCabLights(*elev)
-			}*/
 
 		case a := <-floors:
 			//fmt.Printf("%+v\n", a)
@@ -59,9 +58,8 @@ func Fsm_server(elevStateRx chan elevator.Elevator, elevOrderRx chan collector.E
 			elev.Obstruction = a
 
 			//While the obstruction  is true, onFloorArrival should continue to run, holding the door open.
-			for elev.Obstruction {
-				Fsm_onFloorArrival(elev.Floor, elev)
-			}
+			Fsm_onFloorArrival(elev.Floor, elev)
+			
 
 		case a := <-stop:
 			fmt.Printf("%+v\n", a)
@@ -149,7 +147,7 @@ func SetCabLights(elev elevator.Elevator) {
 	}
 }
 
-func SetHallLights(elevators *[settings.NumElevs]elevator.Elevator, localElev *elevator.Elevator, localID int) {
+func SetHallLights(elevators *[settings.NumElevs]elevator.Elevator, localElev *elevator.Elevator) {
 	
 	//making a matrix with zeros
 	hallMatrix := make([][]bool, elevator.N_FLOORS)
@@ -163,35 +161,39 @@ func SetHallLights(elevators *[settings.NumElevs]elevator.Elevator, localElev *e
 		for floor := 0; floor < elevator.N_FLOORS; floor++ {
 			for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
 				hallMatrix[floor][btn] = hallMatrix[floor][btn] || elevators[id].Requests[floor][btn]
-				fmt.Print(hallMatrix[floor][btn])
+			}
+		}
+	}
+	
+	if localElev.Available == false{ //turn of hall calls from other elevators in case of network loss
+		for floor := 0; floor < elevator.N_FLOORS; floor++ {
+			for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
+				hallMatrix[floor][btn] = localElev.Requests[floor][btn]
 			}
 		}
 	}
 
-	//if elevators[localID].Available {
-		//Setting the lights using the bools in hallMatrix.
-		for floor := 0; floor < elevator.N_FLOORS; floor++ {
-			for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
-				if hallMatrix[floor][btn] {
-					elevio.SetButtonLamp(btn, floor, true)
-				} else {
-					elevio.SetButtonLamp(btn, floor, false)
-				}
-			}
-		}
-	/*} else {
-		for floor := 0; floor < elevator.N_FLOORS; floor++ {
-			for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
-				if localElev.Requests[floor][btn] {
-					elevio.SetButtonLamp(btn, floor, true)
 
-				} else {
-					elevio.SetButtonLamp(btn, floor, false)
-				}
+	for floor := 0; floor < elevator.N_FLOORS; floor++ {
+		for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
+			if hallMatrix[floor][btn] {
+				elevio.SetButtonLamp(btn, floor, true)
+			} else {
+				elevio.SetButtonLamp(btn, floor, false)
 			}
 		}
-	}*/
+	}
 }
+
+
+func updateLights(elevators *[settings.NumElevs]elevator.Elevator, localElev *elevator.Elevator){
+	for{
+		SetHallLights(elevators, localElev)
+		SetCabLights(*localElev)
+		time.Sleep(20 * time.Millisecond)
+	}
+}
+
 
 func onDoorTimeout(elev *elevator.Elevator) {
 
