@@ -21,22 +21,30 @@ func LocalWatchdog(floor chan int, elev *elevator.Elevator, elevOrderTx chan ele
 		select {
 		case <-watchdogTimer.C:
 			if requests.HasRequests(*elev){
+				fmt.Print("\n1\n")
 				if idleFlag{
+					fmt.Print("\n2\n")
 					idleFlag = false
 					watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
 				}else{
-				elev.Available = false
-				distributor.RedistributeFaultyElevOrders(elevOrderTx, elevOrderRx, elevStateRx, elevatorArray, elev, localID)
+					fmt.Print("\n3\n")
+					elev.Available = false
+					elevatorArray[localID].Available = false
+					distributor.RedistributeFaultyElevOrders(elevOrderTx, elevOrderRx, elevStateRx, elevatorArray, elev, localID)
+					watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
 				}
 			} else {
+				fmt.Print("\n4\n")
 				watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
 				idleFlag = true
 			}
 		case <-floor:
+			fmt.Print("\n5\n")
 			elev.Available = true
 			if !watchdogTimer.Stop(){
 				<-watchdogTimer.C
 			}
+			fmt.Print("\n6\n")
 			watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
 			
 		}
