@@ -35,7 +35,7 @@ func FsmServer(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.Ele
 		case buttonPress := <-buttonEvent:
 			go distributor.DistributeOrder(buttonPress, elevOrderTx, elevOrderRx, elevStateRx, elevatorArray, elev, localID)
 
-		case currentFloor := <-floors:
+		case currentFloor := <-floor:
 			onFloorArrival(currentFloor, elev, resetTimer)
 
 
@@ -227,7 +227,7 @@ func ElevatorInit(elev *elevator.Elevator, elevID string) {
 	elevator.InitializeElevStates(elev, elevID)
 	initBetweenFloors(elev)
 	SetCabLights(*elev)
-	
+
 	for floor := 0; floor < settings.N_FLOORS; floor++ {
 		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++ {
 			elevio.SetButtonLamp(btn, floor, false)
