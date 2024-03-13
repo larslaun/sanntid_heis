@@ -8,7 +8,7 @@ import (
 
 
 type DirnBehaviourPair struct {
-	Dirn      elevio.MotorDirection //endret type fra Dirn til elevio.MotorDirection
+	Dirn      elevio.MotorDirection 
 	Behaviour elevator.ElevatorBehaviour
 }
 
@@ -16,8 +16,8 @@ type DirnBehaviourPair struct {
 // by incrementing through each element in the "boolean" requests matrix.
 func RequestsAbove(elev elevator.Elevator) bool {
 	for f := elev.Floor + 1; f < settings.N_FLOORS; f++ {
-		for btn := 0; btn < settings.N_BUTTONS; btn++ {  //må btn loop endres til å iterere gjennom enum, ref
-			if elev.Requests[f][btn] { //la til ==1 på disse NOT. fjernet igjen pga. endret request til bool
+		for btn := 0; btn < settings.N_BUTTONS; btn++ {  
+			if elev.Requests[f][btn] { 
 				return true
 			}
 		}
@@ -27,7 +27,8 @@ func RequestsAbove(elev elevator.Elevator) bool {
 
 // checks if there are any requests for the elevator below it's current floor.
 func RequestsBelow(elev elevator.Elevator) bool {
-	for floor := 0; floor < elev.Floor; f++ {
+
+	for floor := 0; floor < elev.Floor; floor++ {
 		for btn := 0; btn < settings.N_BUTTONS; btn++ {
 			if elev.Requests[floor][btn] {
 				return true
@@ -133,9 +134,8 @@ func RequestsShouldClearImmediately(elev elevator.Elevator, btnFloor int, btnTyp
 // function clears request from the cab at the current floor.
 // if the elevator is going up and there are no more requests above or requests UP at the current floor, it will clear the DOWN-request.
 // It also clears requests for UP as default, there are either no requests there, or it continues to go UP.
-// If the elevator state is Stop, it clears both UP and DOWN hall calls, probably only one of them at that floor, since the elevator door will open for one of (the first) the requests.
 func ClearRequestAtCurrentFloor(elev elevator.Elevator) elevator.Elevator {
-	elev.Requests[elev.Floor][elevio.BT_Cab] = false //endret fra 0 til false
+	elev.Requests[elev.Floor][elevio.BT_Cab] = false 
 
 	switch elev.Dirn {
 	case elevio.MD_Up:

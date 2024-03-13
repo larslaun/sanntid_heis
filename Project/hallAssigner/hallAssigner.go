@@ -9,26 +9,26 @@ import (
 )
 
 //Estimates which elevator sholud serve an incomming request and returns it as an ElevatorOrder
-func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevators [settings.N_ELEVS]elevator.Elevator, localID int) elevator.ElevatorOrder {
+func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevatorArray [settings.N_ELEVS]elevator.Elevator, localID int) elevator.ElevatorOrder {
 
 	var optimalElevID string
 	var lowestCost = 1000000
 	var currCost int
 	var order elevator.ElevatorOrder
 
-	for i := 0; i < settings.N_ELEVS; i++ {
-		if elevators[i].Available &&  elevators[i].NetworkAvailable{
-			elevators[i].Requests[buttonPress.Floor][buttonPress.Button] = true
-			currCost = cost.TimeToIdle(elevators[i])
+	for elev := 0; elev < settings.N_ELEVS; elev++ {
+		if elevatorArray[elev].Available &&  elevatorArray[elev].NetworkAvailable{
+			elevatorArray[elev].Requests[buttonPress.Floor][buttonPress.Button] = true
+			currCost = cost.TimeToIdle(elevatorArray[elev])
 			if currCost < lowestCost {
-				optimalElevID = strconv.Itoa(i)
+				optimalElevID = strconv.Itoa(elev)
 				lowestCost = currCost
 				order = elevator.ElevatorOrder{RecipientID: optimalElevID, Order: buttonPress}
 			}
 		}
 	}
-	if !elevators[localID].NetworkAvailable {
-		order = elevator.ElevatorOrder{RecipientID: elevators[localID].ID, Order: buttonPress}
+	if !elevatorArray[localID].NetworkAvailable {
+		order = elevator.ElevatorOrder{RecipientID: elevatorArray[localID].ID, Order: buttonPress}
 	}
 	return order
 }
