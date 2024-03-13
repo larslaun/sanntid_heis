@@ -14,7 +14,7 @@ const N_BUTTONS int = 3
 
 const MaxTransmissionFailures = 100
 
-const WatchdogTimeoutDuration = time.Duration(10) * time.Second
+const WatchdogTimeoutDuration = time.Duration(5) * time.Second
 const DoorOpenDuration = time.Duration(3) * time.Second
 
 

@@ -26,8 +26,8 @@ func initBetweenFloors(elev *elevator.Elevator) {
 func FsmServer(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.ElevatorOrder, elevOrderTx chan elevator.ElevatorOrder, buttonEvent chan elevio.ButtonEvent, floor chan int, obstruction chan bool, stop chan bool, elev *elevator.Elevator, elevatorArray *[settings.N_ELEVS]elevator.Elevator) {
 	go updateLights(elevatorArray, elev)
 	localID, _ := strconv.Atoi(elev.ID)
-	doorTimeout := time.NewTimer(settings.DOOROPENTIME)
-	resetTimer := make(chan bool, 2)
+	doorTimeout := time.NewTimer(settings.DoorOpenDuration)
+	resetTimer := make(chan bool, 4)
 
 	for {
 		select {
@@ -41,7 +41,7 @@ func FsmServer(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.Ele
 		case buttonPress := <-buttonEvent:
 			go distributor.DistributeOrder(buttonPress, elevOrderTx, elevOrderRx, elevStateRx, elevatorArray, elev, localID)
 
-		case currentFloor := <-floors:
+		case currentFloor := <-floor:
 			onFloorArrival(currentFloor, elev, resetTimer)
 
 
@@ -53,17 +53,9 @@ func FsmServer(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.Ele
 			fmt.Printf("%+v\n", stopState)
 
 		case <-doorTimeout.C:
-			fmt.Print("\nTimeout case\n")
 			onDoorTimeout(elev, resetTimer)
 
 		case <-resetTimer:
-			fmt.Print("Reset timer here \n")
-			/*
-				doorTimeout.Stop()
-				select {
-				case <-doorTimeout.C:
-				default:
-				}*/
 			doorTimeout.Reset(settings.DoorOpenDuration)
 
 		}
@@ -78,7 +70,7 @@ func onRequestButtonPress(buttonEvent elevio.ButtonEvent, elev *elevator.Elevato
 	case elevator.EB_DoorOpen:
 
 		if requests.RequestsShouldClearImmediately(*elev, buttonEvent.Floor, buttonEvent.Button) {
-			fmt.Print("\nShould clear imm\n")
+
 			resetTimer <- true
 			elev.Behaviour = elevator.EB_DoorOpen
       
@@ -99,8 +91,6 @@ func onRequestButtonPress(buttonEvent elevio.ButtonEvent, elev *elevator.Elevato
 		switch elev.Behaviour {
 		case elevator.EB_DoorOpen:
 			elevio.SetDoorOpenLamp(true)
-
-			fmt.Print("\n1\n")
 			resetTimer <- true
 
 			*elev = requests.ClearRequestAtCurrentFloor(*elev)
@@ -127,12 +117,8 @@ func onFloorArrival(newFloor int, elev *elevator.Elevator, resetTimer chan bool)
 			elevio.SetDoorOpenLamp(true)
 
 			*elev = requests.ClearRequestAtCurrentFloor(*elev)
-
-
-			fmt.Print("\n2teurhg\n")
 			resetTimer <- true
 
-			fmt.Print("\n3\n")
 			elev.Behaviour = elevator.EB_DoorOpen //skal den inni if over??
 
 		}
@@ -201,7 +187,6 @@ func updateLights(elevatorArray *[settings.N_ELEVS]elevator.Elevator, localElev 
 }
 
 func onDoorTimeout(elev *elevator.Elevator, resetTimer chan bool) {
-	fmt.Print("\nDoor timed out\n")
 	switch elev.Behaviour {
 	case elevator.EB_DoorOpen:
 		var newBehaviourPair requests.DirnBehaviourPair = requests.ChooseDirection(*elev)
@@ -216,7 +201,6 @@ func onDoorTimeout(elev *elevator.Elevator, resetTimer chan bool) {
 		switch elev.Behaviour {
 		case elevator.EB_DoorOpen:
 			*elev = requests.ClearRequestAtCurrentFloor(*elev)
-			fmt.Print("\nloopcheck\n")
 			resetTimer <- true
 
 		case elevator.EB_Moving:
@@ -236,7 +220,7 @@ func ElevatorInit(elev *elevator.Elevator, elevID string) {
 	elevator.InitializeElevStates(elev, elevID)
 	initBetweenFloors(elev)
 	SetCabLights(*elev)
-	
+
 	for floor := 0; floor < settings.N_FLOORS; floor++ {
 		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++ {
 			elevio.SetButtonLamp(btn, floor, false)
