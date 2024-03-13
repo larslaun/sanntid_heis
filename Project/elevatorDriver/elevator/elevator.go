@@ -105,11 +105,11 @@ func InitializeElevStates(elev *Elevator, elevID string){
 
 
 func ElevatorArrayInit() [settings.N_ELEVS]Elevator{
-	var elevators = [settings.N_ELEVS]Elevator{}
+	var elevatorArray = [settings.N_ELEVS]Elevator{}
 
 	for i := 0; i < settings.N_ELEVS; i++ {
-		InitializeElevStates(&elevators[i], strconv.Itoa(i))
-		PrintElevator(elevators[i])
+		InitializeElevStates(&elevatorArray[i], strconv.Itoa(i))
+		PrintElevator(elevatorArray[i])
 	}
-	return elevators
+	return elevatorArray
 }

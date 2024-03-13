@@ -23,6 +23,7 @@ func TimeToIdle(elevSim elevator.Elevator) int {
 	case elevator.EB_Moving:
 		duration += settings.TRAVELTIME
 		elevSim.Floor += int(elevSim.Dirn)
+
 	case elevator.EB_DoorOpen:
 		duration += settings.DOOROPENTIME
 	}
@@ -50,7 +51,6 @@ func costClearAtCurrentFloor(elevOld elevator.Elevator) elevator.Elevator {
 			elev.Requests[elev.Floor][btn] = false
 		}
 	}
-
 	return elev
 }
 
