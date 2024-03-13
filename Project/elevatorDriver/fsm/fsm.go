@@ -25,8 +25,8 @@ func FsmServer(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.Ele
 		select {
 		case receivedOrder := <-elevOrderRx:
 			if receivedOrder.RecipientID == elev.ID {
-				//fmt.Print("Received new order: ")
-				//fmt.Printf("%+v\n", receivedOrder.Order)
+				fmt.Print("Received new order: ")
+				fmt.Printf("%+v\n", receivedOrder.Order)
 				onRequestButtonPress(receivedOrder.Order, elev)
 			}
 
@@ -139,9 +139,11 @@ func SetHallLights(elevators *[settings.N_ELEVS]elevator.Elevator, localElev *el
 	//Iterating through each Hall-request in every elevator's matrix and OR'ing with every element in the hallMatrix.
 	//This creates a "common" boolean matrix for hallCalls used to light every hall call button of the same type.
 	for id := 0; id < len(elevators); id++ {
-		for floor := 0; floor < settings.N_FLOORS; floor++ {
-			for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
-				hallMatrix[floor][btn] = hallMatrix[floor][btn] || elevators[id].Requests[floor][btn]
+		if elevators[id].NetworkAvailable{
+			for floor := 0; floor < settings.N_FLOORS; floor++ {
+				for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
+					hallMatrix[floor][btn] = hallMatrix[floor][btn] || elevators[id].Requests[floor][btn]
+				}
 			}
 		}
 	}

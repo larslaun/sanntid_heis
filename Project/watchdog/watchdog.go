@@ -24,19 +24,15 @@ func LocalWatchdog(floors chan int, elev *elevator.Elevator, elevOrderTx chan el
 				if idleFlag{
 					idleFlag = false
 					watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
-					fmt.Print("\nChanged idleflag to false\n")
 				}else{
-				fmt.Print("\nWatchdog fired\n")
 				elev.Available = false
 				distributor.RedistributeFaultyElevOrders(elevOrderTx, elevOrderRx, elevStateRx, elevators, elev, localID)
 				}
 			} else {
 				watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
 				idleFlag = true
-				fmt.Print("\nChanged idleflag to true\n")
 			}
 		case <-floors:
-			fmt.Print("New floor reached")
 			elev.Available = true
 			if !watchdogTimer.Stop(){
 				<-watchdogTimer.C
