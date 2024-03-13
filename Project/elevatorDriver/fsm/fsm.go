@@ -81,7 +81,7 @@ func onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevator) {
 		elev.Dirn = pair.Dirn
 		elev.Behaviour = pair.Behaviour
 
-		switch pair.Behaviour { //bytte til elev.Behaviour
+		switch pair.Behaviour { 
 		case elevator.EB_DoorOpen:
 			elevio.SetDoorOpenLamp(true)
 
@@ -191,7 +191,7 @@ func onDoorTimeout(elev *elevator.Elevator) {
 		case elevator.EB_Moving:
 			elevio.SetDoorOpenLamp(false)
 			elevio.SetMotorDirection(elev.Dirn) 
-			
+
 		case elevator.EB_Idle:
 			elevio.SetDoorOpenLamp(false)
 			elevio.SetMotorDirection(elev.Dirn)
