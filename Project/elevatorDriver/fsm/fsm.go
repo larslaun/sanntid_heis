@@ -7,8 +7,8 @@ import (
 	"Elev-project/elevatorDriver/requests"
 	"Elev-project/settings"
 	"fmt"
-	"time"
 	"strconv"
+	"time"
 )
 
 func initBetweenFloors(elev *elevator.Elevator) {
@@ -32,19 +32,16 @@ func FsmServer(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.Ele
 
 		case buttonPress := <-buttons:
 			go distributor.DistributeOrder(buttonPress, elevOrderTx, elevOrderRx, elevStateRx, elevators, elev, localID)
-			
 
 		case currentFloor := <-floors:
 			onFloorArrival(currentFloor, elev)
-			
 
 		case obstrState := <-obstruction:
 			fmt.Printf("%+v\n", obstrState)
-					elev.Obstruction = obstrState
+			elev.Obstruction = obstrState
 
 			//While the obstruction  is true, onFloorArrival should continue to run, holding the door open.
 			//onFloorArrival(elev.Floor, elev)
-			
 
 			//fix later
 		case stopState := <-stop:
@@ -56,7 +53,6 @@ func FsmServer(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.Ele
 }
 
 func onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevator) {
-
 
 	switch elev.Behaviour {
 	case elevator.EB_DoorOpen:
@@ -82,7 +78,6 @@ func onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevator) {
 			time.AfterFunc(settings.DoorOpenDuration, func() { onDoorTimeout(elev) })
 
 			*elev = requests.ClearRequestAtCurrentFloor(*elev)
-			
 
 		case elevator.EB_Moving:
 			elevio.SetMotorDirection(elev.Dirn)
@@ -94,7 +89,6 @@ func onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevator) {
 
 func onFloorArrival(newFloor int, elev *elevator.Elevator) {
 
-
 	elev.Floor = newFloor //dobbeltsjekk at det faktisk er den nye etasjen som blir tatt inn her
 	elevio.SetFloorIndicator(newFloor)
 
@@ -105,9 +99,7 @@ func onFloorArrival(newFloor int, elev *elevator.Elevator) {
 			elevio.SetDoorOpenLamp(true)
 
 			*elev = requests.ClearRequestAtCurrentFloor(*elev)
-
 			time.AfterFunc(settings.DoorOpenDuration, func() { onDoorTimeout(elev) })
-
 			//SetCabLights(*elev)
 			elev.Behaviour = elevator.EB_DoorOpen
 
@@ -129,7 +121,7 @@ func SetCabLights(elev elevator.Elevator) {
 }
 
 func SetHallLights(elevators *[settings.N_ELEVS]elevator.Elevator, localElev *elevator.Elevator) {
-	
+
 	//making a matrix with zeros
 	hallMatrix := make([][]bool, settings.N_FLOORS)
 	for i := range hallMatrix {
@@ -139,7 +131,7 @@ func SetHallLights(elevators *[settings.N_ELEVS]elevator.Elevator, localElev *el
 	//Iterating through each Hall-request in every elevator's matrix and OR'ing with every element in the hallMatrix.
 	//This creates a "common" boolean matrix for hallCalls used to light every hall call button of the same type.
 	for id := 0; id < len(elevators); id++ {
-		if elevators[id].NetworkAvailable{
+		if elevators[id].NetworkAvailable {
 			for floor := 0; floor < settings.N_FLOORS; floor++ {
 				for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
 					hallMatrix[floor][btn] = hallMatrix[floor][btn] || elevators[id].Requests[floor][btn]
@@ -147,15 +139,14 @@ func SetHallLights(elevators *[settings.N_ELEVS]elevator.Elevator, localElev *el
 			}
 		}
 	}
-	
-	if localElev.NetworkAvailable == false{ //turn of hall calls from other elevators in case of network loss
+
+	if localElev.NetworkAvailable == false { //turn of hall calls from other elevators in case of network loss
 		for floor := 0; floor < settings.N_FLOORS; floor++ {
 			for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
 				hallMatrix[floor][btn] = localElev.Requests[floor][btn]
 			}
 		}
 	}
-
 
 	for floor := 0; floor < settings.N_FLOORS; floor++ {
 		for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
@@ -168,15 +159,13 @@ func SetHallLights(elevators *[settings.N_ELEVS]elevator.Elevator, localElev *el
 	}
 }
 
-
-func updateLights(elevators *[settings.N_ELEVS]elevator.Elevator, localElev *elevator.Elevator){
-	for{
+func updateLights(elevators *[settings.N_ELEVS]elevator.Elevator, localElev *elevator.Elevator) {
+	for {
 		SetHallLights(elevators, localElev)
 		SetCabLights(*localElev)
 		time.Sleep(20 * time.Millisecond)
 	}
 }
-
 
 func onDoorTimeout(elev *elevator.Elevator) {
 
@@ -186,7 +175,7 @@ func onDoorTimeout(elev *elevator.Elevator) {
 		elev.Dirn = pair.Dirn
 		elev.Behaviour = pair.Behaviour
 
-		if elev.Obstruction{
+		if elev.Obstruction {
 			elev.Behaviour = elevator.EB_DoorOpen
 		}
 
@@ -196,9 +185,12 @@ func onDoorTimeout(elev *elevator.Elevator) {
 			*elev = requests.ClearRequestAtCurrentFloor(*elev)
 
 		case elevator.EB_Moving:
+			//time.Sleep(settings.DoorOpenDuration / 5)
 			elevio.SetDoorOpenLamp(false)
 			elevio.SetMotorDirection(elev.Dirn) //Var ikke i elev_algo men tror den må være her
+
 		case elevator.EB_Idle:
+
 			elevio.SetDoorOpenLamp(false)
 			elevio.SetMotorDirection(elev.Dirn)
 		}
@@ -210,7 +202,7 @@ func onDoorTimeout(elev *elevator.Elevator) {
 func ElevatorInit(elev *elevator.Elevator, elevID string) {
 	elevator.InitializeElevStates(elev, elevID)
 	initBetweenFloors(elev)
-	
+
 	SetCabLights(*elev)
 	for floor := 0; floor < settings.N_FLOORS; floor++ {
 		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab+1; btn++ {
