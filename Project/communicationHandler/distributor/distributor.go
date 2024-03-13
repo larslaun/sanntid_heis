@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+
 func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Elevator) {
 	for {
 		elevStateTx <- *localElev
@@ -20,6 +21,7 @@ func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Ele
 func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder, elevStateRx chan elevator.Elevator, elevatorArray *[settings.N_ELEVS]elevator.Elevator, localElev *elevator.Elevator, localID int) {
 
 	elevOrder := hallAssigner.ChooseOptimalElev(buttonPress, *elevatorArray, localID)
+
 
 	if elevatorArray[localID].NetworkAvailable == false {
 		fmt.Print("\n10\n")
@@ -34,6 +36,7 @@ func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan elevator.E
 
 		for {
 			select {
+
 			case receivedState := <-elevStateRx:
 				if receivedState.ID == elevOrder.RecipientID {
 					if receivedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button] || receivedState.Floor == elevOrder.Order.Floor {

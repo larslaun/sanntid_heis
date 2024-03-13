@@ -11,6 +11,12 @@ import (
 	"time"
 )
 
+
+//bytte elev til localElev?
+//skrive button og ikke buttons i alle funksjoner
+//floors til floor
+//endre pair til newBehaviourPair
+
 func initBetweenFloors(elev *elevator.Elevator) {
 	elevio.SetMotorDirection(elevio.MD_Down)
 	elev.Dirn = elevio.MD_Down
@@ -62,10 +68,12 @@ func onRequestButtonPress(buttonEvent elevio.ButtonEvent, elev *elevator.Elevato
 
 	switch elev.Behaviour {
 	case elevator.EB_DoorOpen:
-		if requests.RequestsShouldClearImmediately(*elev, buttonEvent.Floor, buttonEvent.Button) {
-			resetTimer <- true
 
+		if requests.RequestsShouldClearImmediately(*elev, buttonEvent.Floor, buttonEvent.Button) {
+
+			resetTimer <- true
 			elev.Behaviour = elevator.EB_DoorOpen
+      
 		} else {
 			elev.Requests[buttonEvent.Floor][buttonEvent.Button] = true
 		}
@@ -74,6 +82,7 @@ func onRequestButtonPress(buttonEvent elevio.ButtonEvent, elev *elevator.Elevato
 		elev.Requests[buttonEvent.Floor][buttonEvent.Button] = true
 
 	case elevator.EB_Idle:
+
 		elev.Requests[buttonEvent.Floor][buttonEvent.Button] = true
 		var newBehaviourPair requests.DirnBehaviourPair = requests.ChooseDirection(*elev)
 		elev.Dirn = newBehaviourPair.Dirn
@@ -95,9 +104,9 @@ func onRequestButtonPress(buttonEvent elevio.ButtonEvent, elev *elevator.Elevato
 }
 
 
-func onFloorArrival(newFloor int, elev *elevator.Elevator, resetTimer chan bool) {
 
-	elev.Floor = newFloor //dobbeltsjekk at det faktisk er den nye etasjen som blir tatt inn her
+func onFloorArrival(newFloor int, elev *elevator.Elevator, resetTimer chan bool) {
+	elev.Floor = newFloor 
 
 	elevio.SetFloorIndicator(newFloor)
 
@@ -130,6 +139,7 @@ func SetCabLights(elev elevator.Elevator) {
 		}
 	}
 }
+
 
 func SetHallLights(elevatorArray *[settings.N_ELEVS]elevator.Elevator, localElev *elevator.Elevator) {
 
@@ -182,6 +192,7 @@ func onDoorTimeout(elev *elevator.Elevator, resetTimer chan bool) {
 		var newBehaviourPair requests.DirnBehaviourPair = requests.ChooseDirection(*elev)
 		elev.Dirn = newBehaviourPair.Dirn
 		elev.Behaviour = newBehaviourPair.Behaviour
+
 
 		if elev.Obstruction {
 			elev.Behaviour = elevator.EB_DoorOpen

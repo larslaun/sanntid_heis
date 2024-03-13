@@ -27,6 +27,7 @@ func RequestsAbove(elev elevator.Elevator) bool {
 
 // checks if there are any requests for the elevator below it's current floor.
 func RequestsBelow(elev elevator.Elevator) bool {
+
 	for floor := 0; floor < elev.Floor; floor++ {
 		for btn := 0; btn < settings.N_BUTTONS; btn++ {
 			if elev.Requests[floor][btn] {
@@ -59,7 +60,7 @@ func HasRequests(elev elevator.Elevator) bool {
 	return false
 }
 
-//decides wether the elevator should move up, stop og move down based on if there are any requests for the elevator.
+//decides wether the elevator should move up, stop or move down based on if there are any requests for the elevator.
 //if the elevator is already moving up, it will check for requests above it's current floor first and handle them.
 
 //->"Continue in the current direction of travel if there are any further requests in that direction"
@@ -76,6 +77,7 @@ func ChooseDirection(elev elevator.Elevator) DirnBehaviourPair {
 		} else {
 			return DirnBehaviourPair{elevio.MD_Stop, elevator.EB_Idle}
 		}
+		
 	case elevio.MD_Down:
 		if RequestsBelow(elev) {
 			return DirnBehaviourPair{elevio.MD_Down, elevator.EB_Moving}
@@ -86,6 +88,7 @@ func ChooseDirection(elev elevator.Elevator) DirnBehaviourPair {
 		} else {
 			return DirnBehaviourPair{elevio.MD_Stop, elevator.EB_Idle}
 		}
+
 	case elevio.MD_Stop:
 		if RequestsHere(elev) {
 			return DirnBehaviourPair{elevio.MD_Stop, elevator.EB_DoorOpen}
@@ -107,10 +110,13 @@ func ShouldStop(elev elevator.Elevator) bool {
 	switch elev.Dirn {
 	case elevio.MD_Down:
 		return elev.Requests[elev.Floor][elevio.BT_HallDown] || elev.Requests[elev.Floor][elevio.BT_Cab] || !RequestsBelow(elev) 
+
 	case elevio.MD_Up:
 		return elev.Requests[elev.Floor][elevio.BT_HallUp] || elev.Requests[elev.Floor][elevio.BT_Cab] || !RequestsAbove(elev)
+
 	case elevio.MD_Stop:
 		fallthrough
+
 	default:
 		return true
 	}
@@ -137,11 +143,13 @@ func ClearRequestAtCurrentFloor(elev elevator.Elevator) elevator.Elevator {
 			elev.Requests[elev.Floor][elevio.BT_HallDown] = false
 		}
 		elev.Requests[elev.Floor][elevio.BT_HallUp] = false
+
 	case elevio.MD_Down:
 		if !RequestsBelow(elev) && !elev.Requests[elev.Floor][elevio.BT_HallDown] {
 			elev.Requests[elev.Floor][elevio.BT_HallUp] = false
 		}
 		elev.Requests[elev.Floor][elevio.BT_HallDown] = false
+
 	default:
 		elev.Requests[elev.Floor][elevio.BT_HallUp] = false
 		elev.Requests[elev.Floor][elevio.BT_HallDown] = false
