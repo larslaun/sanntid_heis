@@ -40,12 +40,11 @@ func FsmServer(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.Ele
 
 		case obstrState := <-obstruction:
 			fmt.Printf("%+v\n", obstrState)
-			/*
-			elev.Obstruction = obstrState
+					elev.Obstruction = obstrState
 
 			//While the obstruction  is true, onFloorArrival should continue to run, holding the door open.
-			onFloorArrival(elev.Floor, elev)
-			*/
+			//onFloorArrival(elev.Floor, elev)
+			
 
 			//fix later
 		case stopState := <-stop:
@@ -83,6 +82,7 @@ func onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevator) {
 			time.AfterFunc(settings.DoorOpenDuration, func() { onDoorTimeout(elev) })
 
 			*elev = requests.ClearRequestAtCurrentFloor(*elev)
+			
 
 		case elevator.EB_Moving:
 			elevio.SetMotorDirection(elev.Dirn)
@@ -185,6 +185,10 @@ func onDoorTimeout(elev *elevator.Elevator) {
 		var pair requests.DirnBehaviourPair = requests.ChooseDirection(*elev)
 		elev.Dirn = pair.Dirn
 		elev.Behaviour = pair.Behaviour
+
+		if elev.Obstruction{
+			elev.Behaviour = elevator.EB_DoorOpen
+		}
 
 		switch elev.Behaviour {
 		case elevator.EB_DoorOpen:
