@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-
+//bytte til elevatorArray
 
 type ElevatorBehaviour int
 

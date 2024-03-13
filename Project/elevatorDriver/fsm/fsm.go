@@ -10,6 +10,12 @@ import (
 	"time"
 )
 
+
+//bytte elev til localElev?
+//skrive button og ikke buttons i alle funksjoner
+//floors til floor
+//endre pair til newBehaviourPair
+
 func initBetweenFloors(elev *elevator.Elevator) {
 	elevio.SetMotorDirection(elevio.MD_Down)
 	elev.Dirn = elevio.MD_Down
@@ -60,7 +66,7 @@ func onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevator) {
 	switch elev.Behaviour {
 	case elevator.EB_DoorOpen:
 		if requests.RequestsShouldClearImmediately(*elev, buttons.Floor, buttons.Button) {
-			time.AfterFunc(settings.DoorOpenDuration, func() { onDoorTimeout(elev) })
+			time.AfterFunc(settings.DoorOpenDuration, func() { onDoorTimeout(elev) }) 
 
 		} else {
 			elev.Requests[buttons.Floor][buttons.Button] = true
@@ -74,7 +80,8 @@ func onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevator) {
 		var pair requests.DirnBehaviourPair = requests.ChooseDirection(*elev)
 		elev.Dirn = pair.Dirn
 		elev.Behaviour = pair.Behaviour
-		switch pair.Behaviour {
+
+		switch pair.Behaviour { //bytte til elev.Behaviour
 		case elevator.EB_DoorOpen:
 			elevio.SetDoorOpenLamp(true)
 
@@ -87,13 +94,10 @@ func onRequestButtonPress(buttons elevio.ButtonEvent, elev *elevator.Elevator) {
 		case elevator.EB_Idle:
 		}
 	}
-	//SetCabLights(*elev)
 }
 
 func onFloorArrival(newFloor int, elev *elevator.Elevator) {
-
-
-	elev.Floor = newFloor //dobbeltsjekk at det faktisk er den nye etasjen som blir tatt inn her
+	elev.Floor = newFloor 
 	elevio.SetFloorIndicator(newFloor)
 
 	switch elev.Behaviour {
@@ -128,14 +132,11 @@ func SetCabLights(elev elevator.Elevator) {
 
 func SetHallLights(elevators *[settings.N_ELEVS]elevator.Elevator, localElev *elevator.Elevator) {
 	
-	//making a matrix with zeros
 	hallMatrix := make([][]bool, settings.N_FLOORS)
 	for i := range hallMatrix {
-		hallMatrix[i] = make([]bool, settings.N_BUTTONS-1) //only including hall-requests
+		hallMatrix[i] = make([]bool, settings.N_BUTTONS-1) 
 	}
 
-	//Iterating through each Hall-request in every elevator's matrix and OR'ing with every element in the hallMatrix.
-	//This creates a "common" boolean matrix for hallCalls used to light every hall call button of the same type.
 	for id := 0; id < len(elevators); id++ {
 		for floor := 0; floor < settings.N_FLOORS; floor++ {
 			for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
@@ -178,9 +179,9 @@ func onDoorTimeout(elev *elevator.Elevator) {
 
 	switch elev.Behaviour {
 	case elevator.EB_DoorOpen:
-		var pair requests.DirnBehaviourPair = requests.ChooseDirection(*elev)
-		elev.Dirn = pair.Dirn
-		elev.Behaviour = pair.Behaviour
+		var newBehaviourPair requests.DirnBehaviourPair = requests.ChooseDirection(*elev)
+		elev.Dirn = newBehaviourPair.Dirn
+		elev.Behaviour = newBehaviourPair.Behaviour
 
 		switch elev.Behaviour {
 		case elevator.EB_DoorOpen:
@@ -189,7 +190,8 @@ func onDoorTimeout(elev *elevator.Elevator) {
 
 		case elevator.EB_Moving:
 			elevio.SetDoorOpenLamp(false)
-			elevio.SetMotorDirection(elev.Dirn) //Var ikke i elev_algo men tror den må være her
+			elevio.SetMotorDirection(elev.Dirn) 
+			
 		case elevator.EB_Idle:
 			elevio.SetDoorOpenLamp(false)
 			elevio.SetMotorDirection(elev.Dirn)

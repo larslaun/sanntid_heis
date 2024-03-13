@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-
+// endre recievedState til receivedState og recieverID
 
 
 func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Elevator) {
@@ -27,15 +27,8 @@ func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan elevator.E
 	elevOrder := hallAssigner.ChooseOptimalElev(buttonPress, *elevators, localID)
 
 
-	/*
-		fmt.Printf("\nOptimal elev calculated:\n")
-		fmt.Printf("optimalElevID: " + elevOrder.RecipientID + "\n")
-		fmt.Printf("Floor: %d \n", elevOrder.Order.Floor)
-		fmt.Printf("Button: %d \n", elevOrder.Order.Button)
-	*/
-
 	if localElev.NetworkAvailable == false {
-		fmt.Print("\n10\n")
+		fmt.Print("\n10\n") //kan fjernes 
 		elevOrderRx <- elevOrder
 	} else {
 		if buttonPress.Button == elevio.BT_Cab {
@@ -49,28 +42,19 @@ func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan elevator.E
 			select {
 			case recievedState := <-elevStateRx:
 				if recievedState.ID == elevOrder.RecipientID {
-					//fmt.Print("1")
-					//fmt.Print(recievedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button])
 					if recievedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button] || recievedState.Floor == elevOrder.Order.Floor {
-						//fmt.Print("2")
-						//fmt.Print("CORRECT state recieved\n")
 						return
-					} //else {
-						//fmt.Print("Wrong state recieved\n")
-					//}
-				}
+					}
 
 			case <-time.After(time.Millisecond * 40):
 				transmissionFailures++
 				//fmt.Printf("Transmission failures: %d\n", transmissionFailures)
 
 				if transmissionFailures >= settings.MaxTransmissionFailures {
-
 					RecieverID, _ := strconv.Atoi(elevOrder.RecipientID)
 					elevators[RecieverID].NetworkAvailable = false
 
 					elevOrder = hallAssigner.ChooseOptimalElev(buttonPress, *elevators, localID)
-
 					if buttonPress.Button == elevio.BT_Cab {
 						elevOrder.RecipientID = localElev.ID
 						elevators[RecieverID].NetworkAvailable = true
@@ -98,8 +82,6 @@ func RedistributeFaultyElevOrders(elevOrderTx chan elevator.ElevatorOrder, elevO
 				hallCall := elevio.ButtonEvent{Floor: floor, Button: btn}
 				go DistributeOrder(hallCall, elevOrderTx, elevOrderRx, elevStateRx, elevators, faultyElev)
 
-				//buttonPress <- elevio.ButtonEvent{Floor: floor, Button: btn}
-				//DistributeOrder(hallCall, elevOrderTx, elevStateRx, elevators, faultyElev)
 				faultyElev.Requests[floor][btn] = false
 			}
 		}
