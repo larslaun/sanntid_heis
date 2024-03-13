@@ -1,10 +1,10 @@
 package watchdog
 
 import (
-	"Elev-project/networkDriver/network/peers"
 	"Elev-project/communicationHandler/distributor"
 	"Elev-project/elevatorDriver/elevator"
 	"Elev-project/elevatorDriver/requests"
+	"Elev-project/networkDriver/network/peers"
 	"Elev-project/settings"
 
 	"fmt"

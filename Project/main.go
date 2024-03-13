@@ -83,8 +83,6 @@ func main() {
 
 	go fsm.FsmServer(elevStateRx2, elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstruction, drv_stop, &elev, &elevatorArray)
 
-	//i := cost_function.TimeToIdle(elev)
-	//fmt.Printf("\nTime to idle: %d\n", i)
 
 	select {}
 }
