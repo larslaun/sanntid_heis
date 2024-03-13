@@ -34,7 +34,7 @@ func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan elevator.E
 		fmt.Printf("Button: %d \n", elevOrder.Order.Button)
 	*/
 
-	if localElev.Available == false {
+	if localElev.NetworkAvailable == false {
 		fmt.Print("\n10\n")
 		elevOrderRx <- elevOrder
 	} else {
@@ -67,13 +67,13 @@ func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan elevator.E
 				if transmissionFailures >= settings.MaxTransmissionFailures {
 
 					RecieverID, _ := strconv.Atoi(elevOrder.RecipientID)
-					elevators[RecieverID].Available = false
+					elevators[RecieverID].NetworkAvailable = false
 
 					elevOrder = hallAssigner.ChooseOptimalElev(buttonPress, *elevators, localID)
 
 					if buttonPress.Button == elevio.BT_Cab {
 						elevOrder.RecipientID = localElev.ID
-						elevators[RecieverID].Available = true
+						elevators[RecieverID].NetworkAvailable = true
 					}
 					transmissionFailures = 0
 				}

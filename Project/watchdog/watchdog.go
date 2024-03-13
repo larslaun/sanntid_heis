@@ -14,20 +14,32 @@ import (
 
 func LocalWatchdog(floors chan int, elev *elevator.Elevator, elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder,elevStateRx chan elevator.Elevator, elevators *[settings.N_ELEVS]elevator.Elevator) {
 	watchdogTimer := time.NewTimer(settings.WatchdogTimeoutDuration)
+	idleFlag := true
 	for {
 		select {
 		case <-watchdogTimer.C:
-			if requests.HasRequests(*elev) {
+			if requests.HasRequests(*elev){
+				if idleFlag{
+					idleFlag = false
+					watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
+					fmt.Print("\nChanged idleflag to false\n")
+				}else{
 				fmt.Print("\nWatchdog fired\n")
 				elev.Available = false
 				distributor.RedistributeFaultyElevOrders(elevOrderTx, elevOrderRx, elevStateRx, elevators, elev)
+				}
 			} else {
 				watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
+				idleFlag = true
+				fmt.Print("\nChanged idleflag to true\n")
 			}
 		case <-floors:
+			if !watchdogTimer.Stop(){
+				<-watchdogTimer.C
+			}
 			watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
 			fmt.Print("New floor reached")
-			//elev.Available = true
+			elev.Available = true
 		}
 	}
 }
@@ -45,8 +57,8 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Ele
 
 			if peers.New != "" {
 				newElev, _ := strconv.Atoi(peers.New)
-				localElev.Available = true
-				elevators[newElev].Available = true
+				localElev.NetworkAvailable = true
+				elevators[newElev].NetworkAvailable = true
 				recoveryElevators[newElev].Available = true
 				distributor.RecoverCabOrders(elevOrderTx, elevOrderRx,elevStateRx, elevators, &recoveryElevators[newElev])
 			}
@@ -56,7 +68,7 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Ele
 			for _, s := range lostElevs {
 				s, _ := strconv.Atoi(s)
 				fmt.Printf("s val: %d\n", s)
-				elevators[s].Available = false
+				elevators[s].NetworkAvailable = false
 				recoveryElevators[s] = elevators[s]
 
 				
@@ -65,7 +77,7 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Ele
 					distributor.RedistributeFaultyElevOrders(elevOrderTx, elevOrderRx,elevStateRx, elevators, &elevators[s])
 					}
 				}else{
-					localElev.Available = false
+					localElev.NetworkAvailable = false
 				}
 			}
 		}

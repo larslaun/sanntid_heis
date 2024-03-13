@@ -144,7 +144,7 @@ func SetHallLights(elevators *[settings.N_ELEVS]elevator.Elevator, localElev *el
 		}
 	}
 	
-	if localElev.Available == false{ //turn of hall calls from other elevators in case of network loss
+	if localElev.NetworkAvailable == false{ //turn of hall calls from other elevators in case of network loss
 		for floor := 0; floor < settings.N_FLOORS; floor++ {
 			for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
 				hallMatrix[floor][btn] = localElev.Requests[floor][btn]
