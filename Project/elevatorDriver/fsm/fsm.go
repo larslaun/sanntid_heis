@@ -8,6 +8,7 @@ import (
 	"Elev-project/settings"
 	"fmt"
 	"time"
+	"strconv"
 )
 
 func initBetweenFloors(elev *elevator.Elevator) {
@@ -18,6 +19,7 @@ func initBetweenFloors(elev *elevator.Elevator) {
 
 func FsmServer(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.ElevatorOrder, elevOrderTx chan elevator.ElevatorOrder, buttons chan elevio.ButtonEvent, floors chan int, obstruction chan bool, stop chan bool, elev *elevator.Elevator, elevators *[settings.N_ELEVS]elevator.Elevator) {
 	go updateLights(elevators, elev)
+	localID, _ := strconv.Atoi(elev.ID)
 
 	for {
 		select {
@@ -29,7 +31,7 @@ func FsmServer(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.Ele
 			}
 
 		case buttonPress := <-buttons:
-			go distributor.DistributeOrder(buttonPress, elevOrderTx, elevOrderRx, elevStateRx, elevators, elev)
+			go distributor.DistributeOrder(buttonPress, elevOrderTx, elevOrderRx, elevStateRx, elevators, elev, localID)
 			
 
 		case currentFloor := <-floors:
@@ -144,7 +146,7 @@ func SetHallLights(elevators *[settings.N_ELEVS]elevator.Elevator, localElev *el
 		}
 	}
 	
-	if localElev.Available == false{ //turn of hall calls from other elevators in case of network loss
+	if localElev.NetworkAvailable == false{ //turn of hall calls from other elevators in case of network loss
 		for floor := 0; floor < settings.N_FLOORS; floor++ {
 			for btn := elevio.BT_HallUp; btn <= elevio.BT_HallDown; btn++ {
 				hallMatrix[floor][btn] = localElev.Requests[floor][btn]

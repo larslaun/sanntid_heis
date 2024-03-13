@@ -17,8 +17,7 @@ func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevators [settings.N_ELE
 	var order elevator.ElevatorOrder
 
 	for i := 0; i < settings.N_ELEVS; i++ {
-		if elevators[i].Available {
-
+		if elevators[i].Available &&  elevators[i].NetworkAvailable{
 			elevators[i].Requests[buttonPress.Floor][buttonPress.Button] = true
 			currCost = cost.TimeToIdle(elevators[i])
 			if currCost < lowestCost {
@@ -28,7 +27,7 @@ func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevators [settings.N_ELE
 			}
 		}
 	}
-	if !elevators[localID].Available {
+	if !elevators[localID].NetworkAvailable {
 		order = elevator.ElevatorOrder{RecipientID: elevators[localID].ID, Order: buttonPress}
 	}
 	return order

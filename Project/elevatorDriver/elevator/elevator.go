@@ -25,6 +25,7 @@ type Elevator struct{
 	Behaviour ElevatorBehaviour
 	ID string
 	Available bool 	
+	NetworkAvailable bool
 	Obstruction bool
 }
 
@@ -98,6 +99,7 @@ func InitializeElevStates(elev *Elevator, elevID string){
 	elev.Behaviour = EB_Idle
 	elev.ID = elevID
 	elev.Available = false
+	elev.NetworkAvailable = false
 	elev.Obstruction = false 
 }
 
