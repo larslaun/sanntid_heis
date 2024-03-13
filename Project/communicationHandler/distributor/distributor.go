@@ -10,9 +10,6 @@ import (
 	"time"
 )
 
-
-
-
 func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Elevator) {
 	for {
 		elevStateTx <- *localElev
@@ -20,11 +17,9 @@ func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Ele
 	}
 }
 
-
 func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.N_ELEVS]elevator.Elevator, localElev *elevator.Elevator, localID int) {
 
 	elevOrder := hallAssigner.ChooseOptimalElev(buttonPress, *elevators, localID)
-
 
 	/*
 		fmt.Printf("\nOptimal elev calculated:\n")
@@ -55,7 +50,7 @@ func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan elevator.E
 						//fmt.Print("CORRECT state recieved\n")
 						return
 					} //else {
-						//fmt.Print("Wrong state recieved\n")
+					//fmt.Print("Wrong state recieved\n")
 					//}
 				}
 
@@ -91,15 +86,18 @@ func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan elevator.E
 
 func RedistributeFaultyElevOrders(elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder, elevStateRx chan elevator.Elevator, elevators *[settings.N_ELEVS]elevator.Elevator, faultyElev *elevator.Elevator, localID int) {
 	fmt.Print("\nRedistribute initiated\n")
+	faultyElevID, _ := strconv.Atoi(faultyElev.ID)
 	for floor := 0; floor < settings.N_FLOORS; floor++ {
 		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab; btn++ {
 			if faultyElev.Requests[floor][btn] {
+				faultyElev.Requests[floor][btn] = false
+				elevators[faultyElevID].Requests[floor][btn] = false
 				hallCall := elevio.ButtonEvent{Floor: floor, Button: btn}
 				go DistributeOrder(hallCall, elevOrderTx, elevOrderRx, elevStateRx, elevators, faultyElev, localID)
 
 				//buttonPress <- elevio.ButtonEvent{Floor: floor, Button: btn}
 				//DistributeOrder(hallCall, elevOrderTx, elevStateRx, elevators, faultyElev)
-				faultyElev.Requests[floor][btn] = false
+
 			}
 		}
 	}
