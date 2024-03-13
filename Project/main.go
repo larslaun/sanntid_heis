@@ -51,10 +51,10 @@ func main() {
 	var elev elevator.Elevator
 	elevio.Init("localhost:"+elevPort, settings.N_FLOORS)
 	fsm.ElevatorInit(&elev, id)
-	elevators := elevator.ElevatorArrayInit()
+	elevatorArray := elevator.ElevatorArrayInit()
 	recoveryElevators := elevator.ElevatorArrayInit()
 	for i := 0; i < settings.N_ELEVS; i++ {
-		elevator.PrintElevator(elevators[i])
+		elevator.PrintElevator(elevatorArray[i])
 	}
 
 	drv_buttons := make(chan elevio.ButtonEvent)
@@ -75,13 +75,13 @@ func main() {
 	go bcast.Receiver(20010, watchdog_elevStateRx)
 
 	go elevio.PollFloorSensor(watchdog_floors)
-	go watchdog.LocalWatchdog(watchdog_floors, &elev, watchdog_elevOrderTx, elevOrderRx, watchdog_elevStateRx, &elevators)
-	go watchdog.NetworkWatchdog(peerUpdateCh, &elev, &elevators, &recoveryElevators, watchdog_elevOrderTx, elevOrderRx, watchdog_elevStateRx)
+	go watchdog.LocalWatchdog(watchdog_floors, &elev, watchdog_elevOrderTx, elevOrderRx, watchdog_elevStateRx, &elevatorArray)
+	go watchdog.NetworkWatchdog(peerUpdateCh, &elev, &elevatorArray, &recoveryElevators, watchdog_elevOrderTx, elevOrderRx, watchdog_elevStateRx)
 
-	go collector.CollectStates(elevStateRx, &elevators, &elev)
+	go collector.CollectStates(elevStateRx, &elevatorArray, &elev)
 	go distributor.DistributeState(elevStateTx, &elev)
 
-	go fsm.FsmServer(elevStateRx2, elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstruction, drv_stop, &elev, &elevators)
+	go fsm.FsmServer(elevStateRx2, elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstruction, drv_stop, &elev, &elevatorArray)
 
 	//i := cost_function.TimeToIdle(elev)
 	//fmt.Printf("\nTime to idle: %d\n", i)
