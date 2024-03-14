@@ -28,13 +28,18 @@ func DistributeOrder(orderEvent chan elevator.ElevatorOrder, elevOrderTx chan el
 			elevatorArray[recievedElevID] = newState
 
 		case newOrder := <- orderEvent:
+			//elevator.PrintElevator(elevatorArray[localID])
+			//fmt.Print("Sending new order: ")
+			//fmt.Printf("%+v\n", newOrder.Order)
+
 			elevOrder := hallAssigner.ChooseOptimalElev(newOrder, elevatorArray, localID)
 
-			
+
 			if elevatorArray[localID].NetworkAvailable == false {
 				fmt.Print("\nNo network, store order directly\n")
 				elevOrderRx <- elevOrder
 			} else {
+				
 			
 				elevOrderTx <- elevOrder
 
@@ -55,6 +60,7 @@ func DistributeOrder(orderEvent chan elevator.ElevatorOrder, elevOrderTx chan el
 
 					case <-time.After(settings.TRANSMISSION_RATE):  //Add to settings
 						transmissionFailures++
+						fmt.Printf("transmission fails: %d\n", transmissionFailures)
 
 						if transmissionFailures >= settings.MaxTransmissionFailures {
 							ReceiverID, _ := strconv.Atoi(elevOrder.RecipientID)
@@ -78,6 +84,8 @@ func RedistributeFaultyElevOrders(orderEvent chan elevator.ElevatorOrder, elevat
 	fmt.Print("\nRedistribute initiated\n")
 	faultyElevID, _ := strconv.Atoi(faultyElev.ID)
 	shouldRedistribute := false
+
+	distributeElevState <- *faultyElev
 
 	for id := 0; id < settings.N_ELEVS; id++{
 		if id != localID && elevatorArray[id].NetworkAvailable{

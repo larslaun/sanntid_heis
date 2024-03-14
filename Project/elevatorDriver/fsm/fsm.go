@@ -35,6 +35,8 @@ func FsmServer(elevOrderRx chan elevator.ElevatorOrder, orderEvent chan elevator
 			}
 
 		case buttonPress := <-buttonEvent:
+			fmt.Print("New button order: ")
+			fmt.Printf("%+v\n", buttonPress)
 			order := elevator.ElevatorOrder{RecipientID: elev.ID, Order: buttonPress}
 			orderEvent<-order
 			

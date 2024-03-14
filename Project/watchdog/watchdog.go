@@ -22,20 +22,16 @@ func LocalWatchdog(floor chan int, elev *elevator.Elevator, distributeElevState 
 		select {
 		case <-watchdogTimer.C:
 			if requests.HasRequests(*elev){
-				fmt.Print("\n1\n")
 				if idleFlag{
-					fmt.Print("\n2\n")
 					idleFlag = false
 					watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
 				}else{
-					fmt.Print("\n3\n")
 					elev.Available = false
 					elevatorArray[localID].Available = false
 					distributor.RedistributeFaultyElevOrders(orderEvent, elevatorArray, elev, localID, distributeElevState)
 					watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
 				}
 			} else {
-				fmt.Print("\n4\n")
 				timeoutCounter++
 				if timeoutCounter == 2{
 					timeoutCounter = 0
@@ -45,13 +41,11 @@ func LocalWatchdog(floor chan int, elev *elevator.Elevator, distributeElevState 
 				idleFlag = true
 			}
 		case <-floor:
-			fmt.Print("\n5\n")
 			elev.Available = true
 			if !watchdogTimer.Stop(){
 				<-watchdogTimer.C
 			}
 			idleFlag = true
-			fmt.Print("\n6\n")
 			watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
 			
 		}
@@ -81,14 +75,26 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Ele
 			}
 
 
+
+
+			//fjerne noe av dette?
+			lostElevs := peers.Lost
+			for _, elevID := range lostElevs {
+				if elevID != localElev.ID{
+					elevID, _ := strconv.Atoi(elevID)
+					elevatorArray[elevID].NetworkAvailable = false
+				}
+			}
+
 			if len(peers.Peers)==0{
+				fmt.Print("\nFirst redis start\n")
 				elevatorArray[localID].NetworkAvailable = false
 				localElev.NetworkAvailable = false
 				distributor.RedistributeFaultyElevOrders(orderEvent, elevatorArray, &elevatorArray[localID], localID, distributeElevState)
+				fmt.Print("\nFirst redis end\n")
 			}
 			
 
-			lostElevs := peers.Lost
 			for _, elevID := range lostElevs {
 				if elevID != localElev.ID{
 					elevID, _ := strconv.Atoi(elevID)
@@ -98,7 +104,9 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Ele
 
 					if len(peers.Peers) !=  0{
 						if localElev.ID == peers.Peers[0] {
-							distributor.RedistributeFaultyElevOrders(orderEvent, elevatorArray, &elevatorArray[elevID], localID, distributeElevState)
+							fmt.Print("\n2 redis start\n")
+							distributor.RedistributeFaultyElevOrders(orderEvent, elevatorArray, &elevatorArray[elevID], localID, distributeElevState) //currently not accessed in case of network loss
+							fmt.Print("\n2 redis end\n")
 						}
 					}
 				}
