@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func LocalWatchdog(floor chan int, elev *elevator.Elevator, elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder,elevStateRx chan elevator.Elevator, elevatorArray *[settings.N_ELEVS]elevator.Elevator) {
+func LocalWatchdog(floor chan int, elev *elevator.Elevator, distributeElevState chan elevator.Elevator, elevatorArray *[settings.N_ELEVS]elevator.Elevator) {
 	watchdogTimer := time.NewTimer(settings.WatchdogTimeoutDuration)
 	idleFlag := true
 	localID, _ := strconv.Atoi(elev.ID)
@@ -59,7 +59,7 @@ func LocalWatchdog(floor chan int, elev *elevator.Elevator, elevOrderTx chan ele
 }
 
 
-func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Elevator, elevatorArray *[settings.N_ELEVS]elevator.Elevator, recoveryElevators *[settings.N_ELEVS]elevator.Elevator, elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder,elevStateRx chan elevator.Elevator) {
+func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Elevator, elevatorArray *[settings.N_ELEVS]elevator.Elevator, recoveryElevators *[settings.N_ELEVS]elevator.Elevator,distributeElevState chan elevator.Elevator) {
 	localID, _ := strconv.Atoi(localElev.ID)
 	for {
 		select {
@@ -75,7 +75,7 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Ele
 				localElev.NetworkAvailable = true
 				elevatorArray[newElev].NetworkAvailable = true
 				recoveryElevators[newElev].NetworkAvailable = true
-				distributor.RecoverCabOrders(elevatorArray, &recoveryElevators[newElev], localID)
+				distributor.RecoverCabOrders(orderEvent, &recoveryElevators[newElev])
 			}
 
 
@@ -89,11 +89,11 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Ele
 				
 				if len(peers.Peers) !=  0{
 					if localElev.ID == peers.Peers[0] {
-					distributor.RedistributeFaultyElevOrders(elevOrderTx, elevOrderRx,elevStateRx, elevatorArray, &elevatorArray[s], localID)
+					distributor.RedistributeFaultyElevOrders(orderEvent, elevatorArray, &elevatorArray[s], localID)
 					}
 				}else{
 					localElev.NetworkAvailable = false
-					distributor.RedistributeFaultyElevOrders(elevOrderTx, elevOrderRx,elevStateRx, elevatorArray, &elevatorArray[s], localID)
+					distributor.RedistributeFaultyElevOrders(orderEvent, elevatorArray, &elevatorArray[s], localID)
 				}
 			}
 		}
