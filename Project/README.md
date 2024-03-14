@@ -4,7 +4,7 @@ Overview of elevator project in TTK4145
 Code execution
 --------------
 
-The code is runnable by first starting the elevatorserver:
+The code is runnable by first starting the elevator server:
 ```
 elevatorserver --port="ElevatorPort"
 ```
@@ -17,14 +17,5 @@ Features
 --------
 
 - Pushing the Stop button will trigger a panic for the program running that specific elevator.
-
-
-
-
-
-
-
-
-
 
 
