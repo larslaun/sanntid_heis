@@ -24,13 +24,14 @@ func DistributeOrder(orderEvent chan elevator.ElevatorOrder, elevOrderTx chan el
 	for{
 		select{
 		case newState := <-distributeElevState:
-			recievedElevID, _ := strconv.Atoi(newState.ID)
-			elevatorArray[recievedElevID] = newState
+			receivedElevID, _ := strconv.Atoi(newState.ID)
+			elevatorArray[receivedElevID] = newState
 
 		case newOrder := <- orderEvent:
 			//elevator.PrintElevator(elevatorArray[localID])
 			//fmt.Print("Sending new order: ")
 			//fmt.Printf("%+v\n", newOrder.Order)
+			//pre 
 
 			elevOrder := hallAssigner.ChooseOptimalElev(newOrder, elevatorArray, localID)
 
@@ -51,8 +52,8 @@ func DistributeOrder(orderEvent chan elevator.ElevatorOrder, elevOrderTx chan el
 				for {
 					select {
 					case receivedState := <-distributeElevState:
-						recievedElevID, _ := strconv.Atoi(receivedState.ID)
-						elevatorArray[recievedElevID] = receivedState
+						receivedElevID, _ := strconv.Atoi(receivedState.ID)
+						elevatorArray[receivedElevID] = receivedState
 						if receivedState.ID == elevOrder.RecipientID {
 							if receivedState.Requests[elevOrder.Order.Floor][elevOrder.Order.Button] || receivedState.Floor == elevOrder.Order.Floor {
 								break out
