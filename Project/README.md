@@ -1,18 +1,18 @@
-Network module for Go (UDP broadcast only)
-==========================================
+Overview of elevator project in TTK4145
+=======================================
 
-See [`main.go`](main.go) for usage example. The code is runnable with just `go run main.go`
+The code is runnable by writing the following in terminal:
+```
+go run main.go "ElevatorID" "CommunicationPort" "Elevatorport"
+```
 
-Add these lines to your `go.mod` file:
-```
-require Network-go v0.0.0
-replace Network-go => ./Network-go
-```
-Where `./Network-go` is the relative path to this folder, after you have downloaded it.
+
 
 
 Features
 --------
+
+- Pushing Stop button will crash the program
 
 Channel-in/channel-out pairs of (almost) any custom or built-in data type can be supplied to a pair of transmitter/receiver functions. Data sent to the transmitter function is automatically serialized and broadcast on the specified port. Any messages received on the receiver's port are de-serialized (as long as they match any of the receiver's supplied channel data types) and sent on the corresponding channel. See [bcast.Transmitter and bcast.Receiver](network/bcast/bcast.go).
 
