@@ -69,14 +69,28 @@ func DistributeOrder(buttonPress elevio.ButtonEvent, elevOrderTx chan elevator.E
 func RedistributeFaultyElevOrders(elevOrderTx chan elevator.ElevatorOrder, elevOrderRx chan elevator.ElevatorOrder, elevStateRx chan elevator.Elevator, elevatorArray *[settings.N_ELEVS]elevator.Elevator, faultyElev *elevator.Elevator, localID int) {
 	fmt.Print("\nRedistribute initiated\n")
 	faultyElevID, _ := strconv.Atoi(faultyElev.ID)
+	shouldRedistribute := false
 
-	for floor := 0; floor < settings.N_FLOORS; floor++ {
-		for btn := elevio.BT_HallUp; btn < elevio.BT_Cab; btn++ {
-			if faultyElev.Requests[floor][btn] {
-				faultyElev.Requests[floor][btn] = false
-				elevatorArray[faultyElevID].Requests[floor][btn] = false
-				hallCall := elevio.ButtonEvent{Floor: floor, Button: btn}
-				go DistributeOrder(hallCall, elevOrderTx, elevOrderRx, elevStateRx, elevatorArray, faultyElev, localID)
+	for id := 0; id < settings.N_ELEVS; id++{
+		if id != localID && elevatorArray[id].NetworkAvailable{
+			shouldRedistribute = true
+			fmt.Print("\nShould redistribute\n")
+		}
+	}
+	if faultyElevID != localID{
+		shouldRedistribute = true
+	}
+
+	if shouldRedistribute{
+		for floor := 0; floor < settings.N_FLOORS; floor++ {
+			for btn := elevio.BT_HallUp; btn < elevio.BT_Cab; btn++ {
+				if faultyElev.Requests[floor][btn] {
+					hallCall := elevio.ButtonEvent{Floor: floor, Button: btn}
+					go DistributeOrder(hallCall, elevOrderTx, elevOrderRx, elevStateRx, elevatorArray, faultyElev, localID)
+					
+					faultyElev.Requests[floor][btn] = false
+					elevatorArray[faultyElevID].Requests[floor][btn] = false
+				}
 			}
 		}
 	}

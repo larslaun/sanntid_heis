@@ -16,6 +16,7 @@ func LocalWatchdog(floor chan int, elev *elevator.Elevator, elevOrderTx chan ele
 	watchdogTimer := time.NewTimer(settings.WatchdogTimeoutDuration)
 	idleFlag := true
 	localID, _ := strconv.Atoi(elev.ID)
+	timeoutCounter := 0
 
 	for {
 		select {
@@ -35,6 +36,11 @@ func LocalWatchdog(floor chan int, elev *elevator.Elevator, elevOrderTx chan ele
 				}
 			} else {
 				fmt.Print("\n4\n")
+				timeoutCounter++
+				if timeoutCounter == 2{
+					timeoutCounter = 0
+					elev.Available = true
+				}
 				watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
 				idleFlag = true
 			}
@@ -44,6 +50,7 @@ func LocalWatchdog(floor chan int, elev *elevator.Elevator, elevOrderTx chan ele
 			if !watchdogTimer.Stop(){
 				<-watchdogTimer.C
 			}
+			idleFlag = true
 			fmt.Print("\n6\n")
 			watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
 			
