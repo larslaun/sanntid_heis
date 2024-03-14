@@ -34,6 +34,7 @@ func DistributeOrder(orderEvent chan elevator.ElevatorOrder, elevOrderTx chan el
 
 			elevOrder := hallAssigner.ChooseOptimalElev(newOrder, elevatorArray, localID)
 
+			fmt.Printf("Sending to elev ID: %s\n" ,elevOrder.RecipientID)
 
 			if elevatorArray[localID].NetworkAvailable == false {
 				fmt.Print("\nNo network, store order directly\n")
@@ -58,7 +59,7 @@ func DistributeOrder(orderEvent chan elevator.ElevatorOrder, elevOrderTx chan el
 							} 
 						}
 
-					case <-time.After(settings.TRANSMISSION_RATE):  //Add to settings
+					case <-time.After(settings.TRANSMISSION_RATE):  
 						transmissionFailures++
 						fmt.Printf("transmission fails: %d\n", transmissionFailures)
 
