@@ -1,33 +1,38 @@
 package main
 
 import (
-	"Elev-project/networkDriver/network/bcast"
-	"Elev-project/networkDriver/network/peers"
 	"Elev-project/communicationHandler/collector"
 	"Elev-project/communicationHandler/distributor"
 	"Elev-project/elevatorDriver/elevator"
-	"Elev-project/settings"
-	"Elev-project/watchdog"
 	"Elev-project/elevatorDriver/elevio"
 	"Elev-project/elevatorDriver/fsm"
+	"Elev-project/networkDriver/network/bcast"
+	"Elev-project/networkDriver/network/peers"
+	"Elev-project/settings"
+	"Elev-project/watchdog"
 	"os"
-	
+	"strconv"
 )
 
 func main() {
 	// Our id can be anything. Here we pass it on the command line, using
 	//  `go run main.go -id=our_id`
 
-	var elevPort string
-	var id string
+	
+	id := "0"
+	commPort := 20008
+	elevPort := "15657"
 
 	args := os.Args
 
+	if len(args)>1{
 	id = args[1]
-	elevPort = args[2]
-
-	if elevPort == "" {
-		elevPort = "15657"
+	}
+	if len(args)>2{
+	commPort, _ = strconv.Atoi(args[2])
+	}
+	if len(args)>3{
+		elevPort = args[3]
 	}
 
 	peerUpdateCh := make(chan peers.PeerUpdate)
@@ -37,16 +42,16 @@ func main() {
 
 	elevStateTx := make(chan elevator.Elevator)
 	elevStateRx := make(chan elevator.Elevator)
-	go bcast.Transmitter(20007, elevStateTx)
-	go bcast.Receiver(20007, elevStateRx)
+	go bcast.Transmitter(commPort, elevStateTx)
+	go bcast.Receiver(commPort, elevStateRx)
 
 	elevStateRx2 := make(chan elevator.Elevator)
-	go bcast.Receiver(20007, elevStateRx2)
+	go bcast.Receiver(commPort, elevStateRx2)
 
 	elevOrderTx := make(chan elevator.ElevatorOrder)
 	elevOrderRx := make(chan elevator.ElevatorOrder)
-	go bcast.Transmitter(21007, elevOrderTx)
-	go bcast.Receiver(21007, elevOrderRx)
+	go bcast.Transmitter(commPort+1000, elevOrderTx)
+	go bcast.Receiver(commPort+1000, elevOrderRx)
 
 	var elev elevator.Elevator
 	elevio.Init("localhost:"+elevPort, settings.N_FLOORS)
@@ -69,10 +74,10 @@ func main() {
 
 	watchdog_floors := make(chan int)
 	watchdog_elevOrderTx := make(chan elevator.ElevatorOrder)
-	go bcast.Transmitter(21007, watchdog_elevOrderTx)
+	go bcast.Transmitter(commPort+1000, watchdog_elevOrderTx)
 
 	watchdog_elevStateRx := make(chan elevator.Elevator)
-	go bcast.Receiver(20007, watchdog_elevStateRx)
+	go bcast.Receiver(commPort, watchdog_elevStateRx)
 
 	go elevio.PollFloorSensor(watchdog_floors)
 	go watchdog.LocalWatchdog(watchdog_floors, &elev, watchdog_elevOrderTx, elevOrderRx, watchdog_elevStateRx, &elevatorArray)
