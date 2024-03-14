@@ -9,7 +9,6 @@ import (
 	"time"
 )
 
-
 //bytte elev til localElev?
 //skrive button og ikke buttons i alle funksjoner
 //floors til floor

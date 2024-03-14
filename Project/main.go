@@ -36,6 +36,8 @@ func main() {
 	}
 	id_int , _ := strconv.Atoi(id)
 
+
+
 	peerUpdateCh := make(chan peers.PeerUpdate)
 	peerTxEnable := make(chan bool)
 	go peers.Transmitter(15647, id, peerTxEnable)
@@ -51,10 +53,14 @@ func main() {
 	go bcast.Transmitter(commPort+1000, elevOrderTx)
 	go bcast.Receiver(commPort+1000, elevOrderRx)
 
+
+
 	var elev elevator.Elevator
 	elevio.Init("localhost:"+elevPort, settings.N_FLOORS)
 	fsm.ElevatorInit(&elev, id)
 	elevatorArray := elevator.ElevatorArrayInit()
+
+
 
 	drv_buttons := make(chan elevio.ButtonEvent)
 	drv_floors := make(chan int)
@@ -66,14 +72,10 @@ func main() {
 	go elevio.PollObstructionSwitch(drv_obstruction)
 	go elevio.PollStopButton(drv_stop)
 
-	
-
-	
 
 	orderEvent := make(chan elevator.ElevatorOrder, 20)
 	distributeElevState := make(chan elevator.Elevator,1)
 	go distributor.DistributeOrder(orderEvent, elevOrderTx, elevOrderRx, distributeElevState, id_int)
-
 	go collector.CollectStates(elevStateRx, &elevatorArray, &elev, distributeElevState)
 	go distributor.DistributeState(elevStateTx, &elev)
 

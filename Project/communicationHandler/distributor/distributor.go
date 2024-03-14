@@ -30,7 +30,7 @@ func DistributeOrder(orderEvent chan elevator.ElevatorOrder, elevOrderTx chan el
 		case newOrder := <- orderEvent:
 			elevOrder := hallAssigner.ChooseOptimalElev(newOrder, elevatorArray, localID)
 
-
+			
 			if elevatorArray[localID].NetworkAvailable == false {
 				fmt.Print("\nNo network, store order directly\n")
 				elevOrderRx <- elevOrder

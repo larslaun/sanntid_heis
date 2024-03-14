@@ -81,21 +81,26 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Ele
 			}
 
 
-			lostElevs := peers.Lost
-			for _, s := range lostElevs {
-				s, _ := strconv.Atoi(s)
-				fmt.Printf("s val: %d\n", s)
-				elevatorArray[s].NetworkAvailable = false
-				recoveryElevators[s] = elevatorArray[s]
+			if len(peers.Peers)==0{
+				elevatorArray[localID].NetworkAvailable = false
+				localElev.NetworkAvailable = false
+				distributor.RedistributeFaultyElevOrders(orderEvent, elevatorArray, &elevatorArray[localID], localID, distributeElevState)
+			}
+			
 
-				
-				if len(peers.Peers) !=  0{
-					if localElev.ID == peers.Peers[0] {
-					distributor.RedistributeFaultyElevOrders(orderEvent, elevatorArray, &elevatorArray[s], localID, distributeElevState)
+			lostElevs := peers.Lost
+			for _, elevID := range lostElevs {
+				if elevID != localElev.ID{
+					elevID, _ := strconv.Atoi(elevID)
+					fmt.Printf("Lost elev ID: %d\n", elevID)
+					elevatorArray[elevID].NetworkAvailable = false
+					recoveryElevators[elevID] = elevatorArray[elevID]
+
+					if len(peers.Peers) !=  0{
+						if localElev.ID == peers.Peers[0] {
+							distributor.RedistributeFaultyElevOrders(orderEvent, elevatorArray, &elevatorArray[elevID], localID, distributeElevState)
+						}
 					}
-				}else{
-					localElev.NetworkAvailable = false
-					distributor.RedistributeFaultyElevOrders(orderEvent, elevatorArray, &elevatorArray[s], localID, distributeElevState)
 				}
 			}
 		}
