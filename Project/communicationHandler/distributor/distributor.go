@@ -14,7 +14,7 @@ import (
 func DistributeState(elevStateTx chan elevator.Elevator, localElev *elevator.Elevator) {
 	for {
 		elevStateTx <- *localElev
-		time.Sleep(20 * time.Millisecond)
+		time.Sleep(settings.STATE_TRANSMISSION_RATE)
 	}
 }
 
@@ -28,25 +28,13 @@ func DistributeOrder(orderEvent chan elevator.ElevatorOrder, elevOrderTx chan el
 			elevatorArray[receivedElevID] = newState
 
 		case newOrder := <- orderEvent:
-			//elevator.PrintElevator(elevatorArray[localID])
-			//fmt.Print("Sending new order: ")
-			//fmt.Printf("%+v\n", newOrder.Order)
-			//pre 
-
 			elevOrder := hallAssigner.ChooseOptimalElev(newOrder, elevatorArray, localID)
 
-			fmt.Printf("Sending to elev ID: %s\n" ,elevOrder.RecipientID)
-
 			if elevatorArray[localID].NetworkAvailable == false {
-				fmt.Print("\nNo network, store order directly\n")
 				elevOrderRx <- elevOrder
 			} else {
-				
-			
 				elevOrderTx <- elevOrder
-
 				transmissionFailures := 0
-
 
 				out:
 				for {
@@ -59,12 +47,10 @@ func DistributeOrder(orderEvent chan elevator.ElevatorOrder, elevOrderTx chan el
 								break out
 							} 
 						}
-
-					case <-time.After(settings.TRANSMISSION_RATE):  
+					case <-time.After(settings.ORDER_TRANSMISSION_RATE):  
 						transmissionFailures++
-						fmt.Printf("transmission fails: %d\n", transmissionFailures)
 
-						if transmissionFailures >= settings.MaxTransmissionFailures {
+						if transmissionFailures >= settings.MAX_TRANSMISSION_FAILURES {
 							ReceiverID, _ := strconv.Atoi(elevOrder.RecipientID)
 							elevatorArray[ReceiverID].NetworkAvailable = false
 							elevOrder = hallAssigner.ChooseOptimalElev(newOrder, elevatorArray, localID)
@@ -84,6 +70,7 @@ func DistributeOrder(orderEvent chan elevator.ElevatorOrder, elevOrderTx chan el
 
 func RedistributeFaultyElevOrders(orderEvent chan elevator.ElevatorOrder, elevatorArray *[settings.N_ELEVS]elevator.Elevator, faultyElev *elevator.Elevator, localID int, distributeElevState chan elevator.Elevator) {
 	fmt.Print("\nRedistribute initiated\n")
+	
 	faultyElevID, _ := strconv.Atoi(faultyElev.ID)
 	shouldRedistribute := false
 
@@ -92,26 +79,21 @@ func RedistributeFaultyElevOrders(orderEvent chan elevator.ElevatorOrder, elevat
 	for id := 0; id < settings.N_ELEVS; id++{
 		if id != localID && elevatorArray[id].NetworkAvailable{
 			shouldRedistribute = true
-			fmt.Print("\nShould redistribute\n")
 		}
 	}
-
 	if faultyElevID != localID{
 		shouldRedistribute = true
 	}
-
 	if shouldRedistribute{
 		for floor := 0; floor < settings.N_FLOORS; floor++ {
 			for btn := elevio.BT_HallUp; btn < elevio.BT_Cab; btn++ {
 				if faultyElev.Requests[floor][btn] {
-					
 					faultyElev.Requests[floor][btn] = false
 					elevatorArray[faultyElevID].Requests[floor][btn] = false
 					distributeElevState <- *faultyElev
 
 					hallCall := elevio.ButtonEvent{Floor: floor, Button: btn}
 					order := elevator.ElevatorOrder{RecipientID: faultyElev.ID, Order: hallCall}
-					
 					orderEvent <- order	
 				}
 			}

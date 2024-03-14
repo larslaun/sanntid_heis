@@ -15,10 +15,6 @@ import (
 )
 
 func main() {
-	// Our id can be anything. Here we pass it on the command line, using
-	//  `go run main.go -id=our_id`
-
-	
 	id := "0"
 	commPort := 20008
 	elevPort := "15657"
@@ -73,11 +69,13 @@ func main() {
 	go elevio.PollStopButton(drv_stop)
 
 
+
 	orderEvent := make(chan elevator.ElevatorOrder, 20)
 	distributeElevState := make(chan elevator.Elevator,1)
 	go distributor.DistributeOrder(orderEvent, elevOrderTx, elevOrderRx, distributeElevState, id_int)
-	go collector.CollectStates(elevStateRx, &elevatorArray, &elev, distributeElevState)
 	go distributor.DistributeState(elevStateTx, &elev)
+	go collector.CollectStates(elevStateRx, &elevatorArray, &elev, distributeElevState)
+	
 
 
 	watchdog_floors := make(chan int)
@@ -86,6 +84,7 @@ func main() {
 	go watchdog.LocalWatchdog(watchdog_floors, &elev, distributeElevState, orderEvent, &elevatorArray)
 	go watchdog.NetworkWatchdog(peerUpdateCh, &elev, &elevatorArray, distributeElevState, orderEvent)
 
+	
 
 	go fsm.FsmServer(elevOrderRx, orderEvent, drv_buttons, drv_floors, drv_obstruction, drv_stop, &elev, &elevatorArray)
 
