@@ -1,13 +1,11 @@
 package fsm
 
 import (
-	"Elev-project/communicationHandler/distributor"
 	"Elev-project/elevatorDriver/elevator"
 	"Elev-project/elevatorDriver/elevio"
 	"Elev-project/elevatorDriver/requests"
 	"Elev-project/settings"
 	"fmt"
-	"strconv"
 	"time"
 )
 
@@ -23,9 +21,8 @@ func initBetweenFloors(elev *elevator.Elevator) {
 	elev.Behaviour = elevator.EB_Moving
 }
 
-func FsmServer(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.ElevatorOrder, elevOrderTx chan elevator.ElevatorOrder, buttonEvent chan elevio.ButtonEvent, floor chan int, obstruction chan bool, stop chan bool, elev *elevator.Elevator, elevatorArray *[settings.N_ELEVS]elevator.Elevator) {
+func FsmServer(elevOrderRx chan elevator.ElevatorOrder, orderEvent chan elevator.ElevatorOrder,buttonEvent chan elevio.ButtonEvent, floor chan int, obstruction chan bool, stop chan bool, elev *elevator.Elevator, elevatorArray *[settings.N_ELEVS]elevator.Elevator) {
 	go updateLights(elevatorArray, elev)
-	localID, _ := strconv.Atoi(elev.ID)
 	doorTimeout := time.NewTimer(settings.DoorOpenDuration)
 	resetTimer := make(chan bool, 4)
 
@@ -39,7 +36,9 @@ func FsmServer(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.Ele
 			}
 
 		case buttonPress := <-buttonEvent:
-			go distributor.DistributeOrder(buttonPress, elevOrderTx, elevOrderRx, elevStateRx, elevatorArray, elev, localID)
+			order := elevator.ElevatorOrder{RecipientID: elev.ID, Order: buttonPress}
+			orderEvent<-order
+			
 
 		case currentFloor := <-floor:
 			onFloorArrival(currentFloor, elev, resetTimer)

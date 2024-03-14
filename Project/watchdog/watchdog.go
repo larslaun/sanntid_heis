@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func LocalWatchdog(floor chan int, elev *elevator.Elevator, distributeElevState chan elevator.Elevator, elevatorArray *[settings.N_ELEVS]elevator.Elevator) {
+func LocalWatchdog(floor chan int, elev *elevator.Elevator, distributeElevState chan elevator.Elevator, orderEvent chan elevator.ElevatorOrder,elevatorArray *[settings.N_ELEVS]elevator.Elevator) {
 	watchdogTimer := time.NewTimer(settings.WatchdogTimeoutDuration)
 	idleFlag := true
 	localID, _ := strconv.Atoi(elev.ID)
@@ -31,7 +31,7 @@ func LocalWatchdog(floor chan int, elev *elevator.Elevator, distributeElevState 
 					fmt.Print("\n3\n")
 					elev.Available = false
 					elevatorArray[localID].Available = false
-					distributor.RedistributeFaultyElevOrders(elevOrderTx, elevOrderRx, elevStateRx, elevatorArray, elev, localID)
+					distributor.RedistributeFaultyElevOrders(orderEvent, elevatorArray, elev, localID, distributeElevState)
 					watchdogTimer.Reset(settings.WatchdogTimeoutDuration)
 				}
 			} else {
@@ -59,8 +59,10 @@ func LocalWatchdog(floor chan int, elev *elevator.Elevator, distributeElevState 
 }
 
 
-func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Elevator, elevatorArray *[settings.N_ELEVS]elevator.Elevator, recoveryElevators *[settings.N_ELEVS]elevator.Elevator,distributeElevState chan elevator.Elevator) {
+func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Elevator, elevatorArray *[settings.N_ELEVS]elevator.Elevator, distributeElevState chan elevator.Elevator, orderEvent chan elevator.ElevatorOrder) {
 	localID, _ := strconv.Atoi(localElev.ID)
+	recoveryElevators := elevator.ElevatorArrayInit()
+
 	for {
 		select {
 		case peers := <-peerUpdateCh:
@@ -75,7 +77,7 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Ele
 				localElev.NetworkAvailable = true
 				elevatorArray[newElev].NetworkAvailable = true
 				recoveryElevators[newElev].NetworkAvailable = true
-				distributor.RecoverCabOrders(orderEvent, &recoveryElevators[newElev])
+				distributor.RecoverCabOrders(orderEvent, distributeElevState,&recoveryElevators[newElev])
 			}
 
 
@@ -89,11 +91,11 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Ele
 				
 				if len(peers.Peers) !=  0{
 					if localElev.ID == peers.Peers[0] {
-					distributor.RedistributeFaultyElevOrders(orderEvent, elevatorArray, &elevatorArray[s], localID)
+					distributor.RedistributeFaultyElevOrders(orderEvent, elevatorArray, &elevatorArray[s], localID, distributeElevState)
 					}
 				}else{
 					localElev.NetworkAvailable = false
-					distributor.RedistributeFaultyElevOrders(orderEvent, elevatorArray, &elevatorArray[s], localID)
+					distributor.RedistributeFaultyElevOrders(orderEvent, elevatorArray, &elevatorArray[s], localID, distributeElevState)
 				}
 			}
 		}

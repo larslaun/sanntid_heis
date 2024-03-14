@@ -34,6 +34,7 @@ func main() {
 	if len(args)>3{
 		elevPort = args[3]
 	}
+	id_int , _ := strconv.Atoi(id)
 
 	peerUpdateCh := make(chan peers.PeerUpdate)
 	peerTxEnable := make(chan bool)
@@ -45,9 +46,6 @@ func main() {
 	go bcast.Transmitter(commPort, elevStateTx)
 	go bcast.Receiver(commPort, elevStateRx)
 
-	elevStateRx2 := make(chan elevator.Elevator)
-	go bcast.Receiver(commPort, elevStateRx2)
-
 	elevOrderTx := make(chan elevator.ElevatorOrder)
 	elevOrderRx := make(chan elevator.ElevatorOrder)
 	go bcast.Transmitter(commPort+1000, elevOrderTx)
@@ -57,10 +55,6 @@ func main() {
 	elevio.Init("localhost:"+elevPort, settings.N_FLOORS)
 	fsm.ElevatorInit(&elev, id)
 	elevatorArray := elevator.ElevatorArrayInit()
-	recoveryElevators := elevator.ElevatorArrayInit()
-	for i := 0; i < settings.N_ELEVS; i++ {
-		elevator.PrintElevator(elevatorArray[i])
-	}
 
 	drv_buttons := make(chan elevio.ButtonEvent)
 	drv_floors := make(chan int)
@@ -72,21 +66,26 @@ func main() {
 	go elevio.PollObstructionSwitch(drv_obstruction)
 	go elevio.PollStopButton(drv_stop)
 
-	watchdog_floors := make(chan int)
-	watchdog_elevOrderTx := make(chan elevator.ElevatorOrder)
-	go bcast.Transmitter(commPort+1000, watchdog_elevOrderTx)
+	
 
-	watchdog_elevStateRx := make(chan elevator.Elevator)
-	go bcast.Receiver(commPort, watchdog_elevStateRx)
+	
 
-	go elevio.PollFloorSensor(watchdog_floors)
-	go watchdog.LocalWatchdog(watchdog_floors, &elev, watchdog_elevOrderTx, elevOrderRx, watchdog_elevStateRx, &elevatorArray)
-	go watchdog.NetworkWatchdog(peerUpdateCh, &elev, &elevatorArray, &recoveryElevators, watchdog_elevOrderTx, elevOrderRx, watchdog_elevStateRx)
+	orderEvent := make(chan elevator.ElevatorOrder, 20)
+	distributeElevState := make(chan elevator.Elevator,1)
+	go distributor.DistributeOrder(orderEvent, elevOrderTx, elevOrderRx, distributeElevState, id_int)
 
-	go collector.CollectStates(elevStateRx, &elevatorArray, &elev)
+	go collector.CollectStates(elevStateRx, &elevatorArray, &elev, distributeElevState)
 	go distributor.DistributeState(elevStateTx, &elev)
 
-	go fsm.FsmServer(elevStateRx2, elevOrderRx, elevOrderTx, drv_buttons, drv_floors, drv_obstruction, drv_stop, &elev, &elevatorArray)
+
+	watchdog_floors := make(chan int)
+	go elevio.PollFloorSensor(watchdog_floors)
+
+	go watchdog.LocalWatchdog(watchdog_floors, &elev, distributeElevState, orderEvent, &elevatorArray)
+	go watchdog.NetworkWatchdog(peerUpdateCh, &elev, &elevatorArray, distributeElevState, orderEvent)
+
+
+	go fsm.FsmServer(elevOrderRx, orderEvent, drv_buttons, drv_floors, drv_obstruction, drv_stop, &elev, &elevatorArray)
 
 
 	select {}

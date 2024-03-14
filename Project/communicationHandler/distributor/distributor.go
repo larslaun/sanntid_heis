@@ -102,26 +102,24 @@ func RedistributeFaultyElevOrders(orderEvent chan elevator.ElevatorOrder, elevat
 					hallCall := elevio.ButtonEvent{Floor: floor, Button: btn}
 					order := elevator.ElevatorOrder{RecipientID: faultyElev.ID, Order: hallCall}
 					
-					orderEvent <- order
-					
-					
+					orderEvent <- order	
 				}
 			}
 		}
 	}
 }
 
-func RecoverCabOrders(orderEvent chan elevator.ElevatorOrder, faultyElev *elevator.Elevator) {
+func RecoverCabOrders(orderEvent chan elevator.ElevatorOrder, distributeElevState chan elevator.Elevator,faultyElev *elevator.Elevator) {
 	fmt.Print("\nCab recovery initiated\n")
 
 	for floor := 0; floor < settings.N_FLOORS; floor++ {
 		if faultyElev.Requests[floor][elevio.BT_Cab] {
+			faultyElev.Requests[floor][elevio.BT_Cab] = false
+			distributeElevState <- *faultyElev
 
 			cabCall := elevio.ButtonEvent{Floor: floor, Button: elevio.BT_Cab}
 			order := elevator.ElevatorOrder{RecipientID: faultyElev.ID, Order: cabCall}
 			orderEvent <- order
-
-			faultyElev.Requests[floor][elevio.BT_Cab] = false
 		}
 	}
 }
