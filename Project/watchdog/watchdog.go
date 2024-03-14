@@ -75,7 +75,7 @@ func NetworkWatchdog(peerUpdateCh chan peers.PeerUpdate, localElev *elevator.Ele
 				localElev.NetworkAvailable = true
 				elevatorArray[newElev].NetworkAvailable = true
 				recoveryElevators[newElev].NetworkAvailable = true
-				distributor.RecoverCabOrders(elevOrderTx, elevOrderRx,elevStateRx, elevatorArray, &recoveryElevators[newElev], localID)
+				distributor.RecoverCabOrders(elevatorArray, &recoveryElevators[newElev], localID)
 			}
 
 
