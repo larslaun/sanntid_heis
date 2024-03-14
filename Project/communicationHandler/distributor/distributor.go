@@ -77,6 +77,9 @@ func RedistributeFaultyElevOrders(elevOrderTx chan elevator.ElevatorOrder, elevO
 			fmt.Print("\nShould redistribute\n")
 		}
 	}
+	if faultyElevID != localID{
+		shouldRedistribute = true
+	}
 
 	if shouldRedistribute{
 		for floor := 0; floor < settings.N_FLOORS; floor++ {
