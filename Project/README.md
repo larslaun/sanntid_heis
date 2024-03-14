@@ -1,9 +1,13 @@
 Overview of elevator project in TTK4145
 =======================================
 
-The code is runnable by writing the following in terminal:
+The code is runnable by first starting the elevatorserver:
 ```
-go run main.go "ElevatorID" "CommunicationPort" "Elevatorport"
+elevatorserver --port="ElevatorPort"
+```
+followed by running the program by writing the following:
+```
+go run main.go "ElevatorID" "CommunicationPort" "ElevatorPort"
 ```
 
 
