@@ -51,6 +51,7 @@ func FsmServer(elevStateRx chan elevator.Elevator, elevOrderRx chan elevator.Ele
 
 		case stopState := <-stop:
 			fmt.Printf("%+v\n", stopState)
+			panic("Stop button pressed")
 
 		case <-doorTimeout.C:
 			onDoorTimeout(elev, resetTimer)
@@ -182,7 +183,7 @@ func updateLights(elevatorArray *[settings.N_ELEVS]elevator.Elevator, localElev 
 	for {
 		SetHallLights(elevatorArray, localElev)
 		SetCabLights(*localElev)
-		time.Sleep(20 * time.Millisecond)
+		time.Sleep(200 * time.Millisecond)
 	}
 }
 

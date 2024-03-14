@@ -37,16 +37,16 @@ func main() {
 
 	elevStateTx := make(chan elevator.Elevator)
 	elevStateRx := make(chan elevator.Elevator)
-	go bcast.Transmitter(20010, elevStateTx)
-	go bcast.Receiver(20010, elevStateRx)
+	go bcast.Transmitter(20007, elevStateTx)
+	go bcast.Receiver(20007, elevStateRx)
 
 	elevStateRx2 := make(chan elevator.Elevator)
-	go bcast.Receiver(20010, elevStateRx2)
+	go bcast.Receiver(20007, elevStateRx2)
 
 	elevOrderTx := make(chan elevator.ElevatorOrder)
 	elevOrderRx := make(chan elevator.ElevatorOrder)
-	go bcast.Transmitter(21010, elevOrderTx)
-	go bcast.Receiver(21010, elevOrderRx)
+	go bcast.Transmitter(21007, elevOrderTx)
+	go bcast.Receiver(21007, elevOrderRx)
 
 	var elev elevator.Elevator
 	elevio.Init("localhost:"+elevPort, settings.N_FLOORS)
@@ -69,10 +69,10 @@ func main() {
 
 	watchdog_floors := make(chan int)
 	watchdog_elevOrderTx := make(chan elevator.ElevatorOrder)
-	go bcast.Transmitter(21010, watchdog_elevOrderTx)
+	go bcast.Transmitter(21007, watchdog_elevOrderTx)
 
 	watchdog_elevStateRx := make(chan elevator.Elevator)
-	go bcast.Receiver(20010, watchdog_elevStateRx)
+	go bcast.Receiver(20007, watchdog_elevStateRx)
 
 	go elevio.PollFloorSensor(watchdog_floors)
 	go watchdog.LocalWatchdog(watchdog_floors, &elev, watchdog_elevOrderTx, elevOrderRx, watchdog_elevStateRx, &elevatorArray)
