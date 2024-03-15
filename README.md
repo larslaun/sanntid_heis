@@ -12,9 +12,16 @@ followed by running the program by writing the following in a separate terminal:
 ```
 go run main.go <ElevatorID> <CommunicationPort> <ElevatorPort>
 ```
-The IDs for the elevators have to begin at 0. By leaving the "Elevatorport" field empty the program will use the standard 15657 port.
+The IDs for the elevators have to begin at 0, so three elevators will have the IDs [0, 1, 2]. By leaving the "Elevatorport" field empty the program will use the standard 15657 port.
 
-Pushing the Stop button will trigger a panic for the program running that specific elevator.
+An example of running the main program for the first elevator:
+```
+go run main.go 0 20008 15657
+```
+This runs the program by defining elevator 0 on communication port 20008 and elevator port 15657.
+
+
+NB! Pushing the Stop button will trigger a panic for the program running that specific elevator.
 
 
 Modules
