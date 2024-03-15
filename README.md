@@ -1,12 +1,19 @@
-# sanntid_heis
-Term project in TTK4145
+Overview of elevator project in TTK4145
+=======================================
 
+Code execution
+--------------
 
-To run multiple simulators:
-In new terminals write:
-    -./SimElevatorServer --port MYPORT , ex. ./SimElevatorServer --port 12345 
-    -go run main.go -id="MYID" -elevPort="MYPORT" , ex. go run main.go -id="0" -elevPort="12345" (15657 default port if you pass no argument to ./SimElevatorServer)
-Different simulators should use different ports.
+The code is runnable by first starting the elevator server:
+```
+elevatorserver --port="ElevatorPort"
+```
+followed by running the program by writing the following:
+```
+go run main.go "ElevatorID" "CommunicationPort" "ElevatorPort"
+```
 
-test
-test2
+Features
+--------
+
+- Pushing the Stop button will trigger a panic for the program running that specific elevator.
