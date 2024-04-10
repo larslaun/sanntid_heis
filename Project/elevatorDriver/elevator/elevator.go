@@ -7,8 +7,6 @@ import (
 	"strconv"
 )
 
-//bytte til elevatorArray
-
 type ElevatorBehaviour int
 
 const (
@@ -36,6 +34,7 @@ type ElevatorOrder struct{
 
 
 
+
 func dirnToString(motorDir elevio.MotorDirection) string{
 	if motorDir == elevio.MD_Up{
 		return "MD_Up"
@@ -45,6 +44,7 @@ func dirnToString(motorDir elevio.MotorDirection) string{
 		return "MD_Stop"
 	}
 }
+
 
 func behaviourToString(eb ElevatorBehaviour) string{
 	if eb == EB_Idle{
@@ -60,11 +60,11 @@ func behaviourToString(eb ElevatorBehaviour) string{
 func PrintElevator(es Elevator){
 	fmt.Print("\nElevator ID: ")
 	fmt.Print(es.ID)
-	fmt.Print("\n")
-	fmt.Printf("Availible: ")
+	fmt.Printf("\nAvailable: ")
 	fmt.Print(es.Available)
-	fmt.Print("\n")
-	fmt.Printf("Obstruction: ")
+	fmt.Printf("\nNetwork Available: ")
+	fmt.Print(es.NetworkAvailable)
+	fmt.Printf("\nObstruction: ")
 	fmt.Print(es.Obstruction)
 	fmt.Print("\n")
 	fmt.Print("  +--------------------+\n")
