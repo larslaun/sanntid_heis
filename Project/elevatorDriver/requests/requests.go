@@ -12,8 +12,6 @@ type DirnBehaviourPair struct {
 	Behaviour elevator.ElevatorBehaviour
 }
 
-// checks if there are any requests for the elevator above it's current floor
-// by incrementing through each element in the "boolean" requests matrix.
 func RequestsAbove(elev elevator.Elevator) bool {
 	for f := elev.Floor + 1; f < settings.N_FLOORS; f++ {
 		for btn := 0; btn < settings.N_BUTTONS; btn++ {  
@@ -25,7 +23,6 @@ func RequestsAbove(elev elevator.Elevator) bool {
 	return false
 }
 
-// checks if there are any requests for the elevator below it's current floor.
 func RequestsBelow(elev elevator.Elevator) bool {
 
 	for floor := 0; floor < elev.Floor; floor++ {
@@ -38,7 +35,6 @@ func RequestsBelow(elev elevator.Elevator) bool {
 	return false
 }
 
-// checks if there are any requests for the elevator at it's current floor
 func RequestsHere(elev elevator.Elevator) bool {
 	for btn := 0; btn < settings.N_BUTTONS; btn++ {
 		if elev.Requests[elev.Floor][btn] {
@@ -48,7 +44,6 @@ func RequestsHere(elev elevator.Elevator) bool {
 	return false
 }
 
-//checks if the request matrix for an elevator is empty
 func HasRequests(elev elevator.Elevator) bool {
 	for floor:=0; floor<settings.N_FLOORS; floor++{
 		for btn := 0; btn < settings.N_BUTTONS; btn++ {
@@ -59,11 +54,6 @@ func HasRequests(elev elevator.Elevator) bool {
 	}
 	return false
 }
-
-//decides wether the elevator should move up, stop or move down based on if there are any requests for the elevator.
-//if the elevator is already moving up, it will check for requests above it's current floor first and handle them.
-
-//->"Continue in the current direction of travel if there are any further requests in that direction"
 
 func ChooseDirection(elev elevator.Elevator) DirnBehaviourPair {
 	switch elev.Dirn {
@@ -104,8 +94,6 @@ func ChooseDirection(elev elevator.Elevator) DirnBehaviourPair {
 	}
 }
 
-// checks if the elevator should stop at it's current floor or not. It will only stop if the cab has ordered it to or there is a
-// a request in the direction it is already moving.
 func ShouldStop(elev elevator.Elevator) bool {
 	switch elev.Dirn {
 	case elevio.MD_Down:
@@ -122,7 +110,6 @@ func ShouldStop(elev elevator.Elevator) bool {
 	}
 }
 
-// function where you can spesify a specific request type and it returns wether the request should be cleared or not.
 func RequestsShouldClearImmediately(elev elevator.Elevator, btnFloor int, btnType elevio.ButtonType) bool {
 	return elev.Floor == btnFloor &&
 		((elev.Dirn == elevio.MD_Up && btnType == elevio.BT_HallUp) ||
@@ -131,9 +118,6 @@ func RequestsShouldClearImmediately(elev elevator.Elevator, btnFloor int, btnTyp
 			btnType == elevio.BT_Cab)
 }
 
-// function clears request from the cab at the current floor.
-// if the elevator is going up and there are no more requests above or requests UP at the current floor, it will clear the DOWN-request.
-// It also clears requests for UP as default, there are either no requests there, or it continues to go UP.
 func ClearRequestAtCurrentFloor(elev elevator.Elevator) elevator.Elevator {
 	elev.Requests[elev.Floor][elevio.BT_Cab] = false 
 

@@ -8,27 +8,31 @@ import (
 	"strconv"
 )
 
-//Estimates which elevator sholud serve an incomming request and returns it as an ElevatorOrder
-func ChooseOptimalElev(buttonPress elevio.ButtonEvent, elevatorArray [settings.N_ELEVS]elevator.Elevator, localID int) elevator.ElevatorOrder {
 
+func ChooseOptimalElev(orderRecipientPair elevator.ElevatorOrder, elevatorArray [settings.N_ELEVS]elevator.Elevator, localID int) elevator.ElevatorOrder {
 	var optimalElevID string
 	var lowestCost = 1000000
 	var currCost int
-	var order elevator.ElevatorOrder
+	originalOrderID := orderRecipientPair.RecipientID
 
 	for elev := 0; elev < settings.N_ELEVS; elev++ {
 		if elevatorArray[elev].Available &&  elevatorArray[elev].NetworkAvailable{
-			elevatorArray[elev].Requests[buttonPress.Floor][buttonPress.Button] = true
+			elevatorArray[elev].Requests[orderRecipientPair.Order.Floor][orderRecipientPair.Order.Button] = true
 			currCost = cost.TimeToIdle(elevatorArray[elev])
 			if currCost < lowestCost {
 				optimalElevID = strconv.Itoa(elev)
 				lowestCost = currCost
-				order = elevator.ElevatorOrder{RecipientID: optimalElevID, Order: buttonPress}
+				orderRecipientPair = elevator.ElevatorOrder{RecipientID: optimalElevID, Order: orderRecipientPair.Order}
 			}
 		}
 	}
 	if !elevatorArray[localID].NetworkAvailable {
-		order = elevator.ElevatorOrder{RecipientID: elevatorArray[localID].ID, Order: buttonPress}
+		orderRecipientPair = elevator.ElevatorOrder{RecipientID: elevatorArray[localID].ID, Order: orderRecipientPair.Order}
 	}
-	return order
+	
+	if orderRecipientPair.Order.Button == elevio.BT_Cab{
+		orderRecipientPair = elevator.ElevatorOrder{RecipientID: originalOrderID, Order: orderRecipientPair.Order}
+	}
+
+	return orderRecipientPair
 }
