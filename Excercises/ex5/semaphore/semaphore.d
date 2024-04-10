@@ -35,8 +35,11 @@ class Resource(T) {
     T allocate(int priority){
         mtx.wait();
         if(busy){
+            numWaiting[priority] ++;
             mtx.notify();
+
             sems[priority].wait();
+            numWaiting[priority] --;
         }
         busy = true;
         mtx.notify();
@@ -44,13 +47,13 @@ class Resource(T) {
     }
     
     void deallocate(T v){
-        value = v;
         mtx.wait();
         busy = false;
-        if(numWaiting[1] < 0){
+        value = v;
+        if(numWaiting[1] > 0){
             sems[1].notify();
-        } else if(numWaiting[0] < 0){
-           sems[0].notify(); 
+        } else if(numWaiting[0] > 0){ 
+            sems[0].notify(); 
         } else {
             mtx.notify();
         }
